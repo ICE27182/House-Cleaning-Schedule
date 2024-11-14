@@ -5,7 +5,7 @@ from .type_aliases import WeekYear, RowNo, ColNo
 
 def html_a(href:str, text:str, class_:str = None, id:str = None) -> str:
     return (
-        "<a" +
+        f"<a href=\"{href}\"" + 
             f"{'' if class_ is None else f' class="{class_}"'}" +
             f"{'' if id is None else f' id="{id}"'}" +
         ">" + 
@@ -40,8 +40,8 @@ class HtmlTable:
         out = [
             (
                 "<table" + 
-                '' if self.class_ is None else f' class="{self.class_}"' +
-                '' if self.id is None else f' id="{self.id}"' +
+                ('' if self.class_ is None else f' class="{self.class_}"') +
+                ('' if self.id is None else f' id="{self.id}"') +
                 '>'
             ),
         ]

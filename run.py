@@ -6,7 +6,7 @@ app = create_app()
 from flask import redirect
 @app.route("/")
 def root_redirect():
-    return redirect("/cleaning_schedules/more_info/basement_cleaning")
+    return redirect("/cleaning_schedules")
 
 # I shouldn't have used run for the final product tho
 # But it is just a small website, so it's probably fine

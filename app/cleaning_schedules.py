@@ -1,13 +1,13 @@
 
 
-
+from .url_prefixes import CLEANING_SCHEDULES_URL_PREFIX
 from .database import record
 from .current import current
 
 from flask import Blueprint, redirect, render_template
 
 cleaning_schedules = Blueprint("cleaning_schedules", __name__)
-CLEANING_SCHEDULES_URL_PREFIX = "/cleaning_schedules"
+
 
 @cleaning_schedules.route("/current_week")
 def route_cleaning_schedules_current_week():
@@ -29,5 +29,5 @@ def route_cleaning_schedules():
         "/cleaning_schedules/cleaning_schedules.html",
         week_no = current.week_no,
         year = current.year,
-        record_table = current.html_table()
+        record_table = current.html_table(current.week_year())
     )

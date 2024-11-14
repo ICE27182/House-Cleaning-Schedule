@@ -6,11 +6,9 @@ from .type_aliases import ScheduleGenerator, ScheduleGenerated, ScheduleGet
 from .type_aliases import RecordGet, RecordData
 from .type_utils import tuple_week_year, date_week_year, str_week_year, task_date_to_str
 
-from types import MethodType
 from typing import Self
 from abc import ABC, abstractmethod
 
-from flask import Flask
 import json
 import os.path
 from datetime import date, timedelta
@@ -149,7 +147,7 @@ class Record(_Database):
 
 
 def _generator_plastic_garbage(week_year:WeekYear) -> ScheduleGenerated:
-    seed = 3
+    seed = 30
     person_needed = 1
     # seed will be an offset of index
     seed = abs(seed) + 5
@@ -224,7 +222,7 @@ def _generator_toilet_cleaning(week_year:WeekYear) -> ScheduleGenerated:
     return (name_list, None)
 
 schedule = Schedule()
-schedule.add_task("House Vaccuming", None, 2, 0, None)
+schedule.add_task("House Vaccuming", None, 2, 10, None)
 schedule.add_task("Kitchen Cleaning", None, 2, 1, None)
 schedule.add_task("Basement Cleaning", None, 1, 2, None)
 schedule.add_task("Plastic Garbage", _generator_plastic_garbage)

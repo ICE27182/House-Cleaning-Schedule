@@ -52,8 +52,21 @@ img.more_info {
     width: 50%;
 }
 
+a {
+    color: #9cdcff;
+    font-family: monospace;
+}
 
+p.center {
+    text-align: center;
+}
 
+footer {
+    text-align: center;
+    color:yellow
+}
+
+/* Used for buttons */
 .red {
     color: #ff0000;
 }

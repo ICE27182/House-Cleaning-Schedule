@@ -1,11 +1,13 @@
 
+from .url_prefixes import MORE_INFO_URL_PREFIX
 from .type_aliases import TaskName
+from .html_utils import HtmlTable, html_a, html_p
 from .type_utils import taskname_to_var_name
 from .database import record, schedule, Record, Schedule
 from flask import Blueprint, render_template
 
 more_info = Blueprint("more_info", __name__)
-MORE_INFO_URL_PREFIX = "/cleaning_schedules/more_info"
+
 
 class MoreInfo:
     def __init__(self, taskname:TaskName, html_path:str=None) -> None:
@@ -21,6 +23,13 @@ class MoreInfo:
         return taskname.lower().replace(' ', '_')
 
     def html_table(self, record:Record, schedule:Schedule, prior_weeks:int = 3, future_weeks:int = 5) -> str:
+        # prior + current + future
+        rows = prior_weeks + 1 + future_weeks
+        table = HtmlTable(rows, 2, "center")
+        for n in range(rows):
+            pass
+
+
         return """
 <table class="more_info_table">
     <tr>
