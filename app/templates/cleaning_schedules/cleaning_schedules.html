@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    </head>
+    <body>
+        <h1>Week {{ week_no }}, {{ year }}</h1>
+        <table class="left_right">
+            <th class="left">
+                <a href="/cleaning_schedules/current_week">Current Week</a>
+            </th>
+            <th class="right">
+                <a href="/cleaning_schedules/next_week">Next Week</a>
+            </th>
+        </table>
+        <table class="center">
+            <th class="more_info">
+                {{ record_table | safe}}
+            </th>
+            
+            </th class="more_info">
+        </table>
+    </body>
+</html>
