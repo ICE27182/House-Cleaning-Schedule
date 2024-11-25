@@ -19,7 +19,17 @@ class _Database(ABC):
         pass
 
 class Schedule(_Database):
-    names:tuple[Name] = ('Gregor', 'Swastika', 'Ismail', 'Isabelle', 'Korina', 'Evelin', 'Adarsh', 'Sasa', 'Nil', 'Waqar', 'Amina', 'Justin', 'Sam', 'Davide')
+    names:tuple[Name] = (
+        'Justin', 'Sam', 
+        'Davide', 'Sasa', 
+        'Nil', 'Waqar', 
+        'Hannah', 'Isabelle', 
+        'Korina', 'Evelin', 
+        'Adarsh', 'Gregor', 
+        'Swastika', 'Ismail',
+        'Pati', 'Amina',
+    )
+    
     def __init__(self, ) -> None:
         super().__init__()
         self.tasks:dict[TaskName: ScheduleGenerator] = {}
@@ -66,7 +76,6 @@ class Schedule(_Database):
             return (name_list, task_date)
         return generate
     
-
     def __getitem__(self, week_year:WeekYear) -> ScheduleGet:
         out:ScheduleGet = {}
         for taskname, generator in self.tasks.items():
@@ -103,7 +112,7 @@ class Record(_Database):
         with open(self.path, 'w') as json_file:
             json.dump(self.data, json_file)
     
-    def strip_data(self, path:PathLike|bool = True, threshold:int=365) -> None:
+    def strip_old_data(self, path:PathLike|bool = True, threshold:int=365) -> None:
         def get_min_max(stripped:RecordData) -> tuple[date, date]:
             min = date.today()
             max = date(1, 1, 1)
@@ -120,13 +129,39 @@ class Record(_Database):
             if date.today() - date_week_year(week_year) > timedelta(threshold):
                 stripped[week_year] = self.data[week_year]
         for week_year in stripped.keys():
-            del self.date[week_year]
+            del self.data[week_year]
         if path != False and len(stripped) != 0:
             if path == True:
                 min, max = get_min_max(stripped)
                 path = f"{min} - {max}"
             with open(path, 'w') as json_file:
                 json.dump(stripped, json_file)
+    
+    def strip_future_data(self, path:PathLike|bool = False, threshold:int=0) -> None:
+        def get_min_max(stripped:RecordData) -> tuple[date, date]:
+            min = date(9999, 12, 31)
+            max = date.today()
+            for week_year in stripped.keys():
+                week_year = date_week_year(week_year)
+                if week_year < min:
+                    min = week_year
+                if week_year > max:
+                    max = week_year
+            return (min, max)
+
+        stripped = {}
+        for week_year in self.data.keys():
+            if date_week_year(week_year) - date.today() > timedelta(threshold):
+                stripped[week_year] = self.data[week_year]
+        for week_year in stripped.keys():
+            del self.data[week_year]
+        if path != False and len(stripped) != 0:
+            if path == True:
+                min, max = get_min_max(stripped)
+                path = f"{min} - {max}"
+            with open(path, 'w') as json_file:
+                json.dump(stripped, json_file)
+    
 
     def __getitem__(self, week_year:WeekYear) -> RecordGet:
         if week_year not in self.data:
@@ -148,7 +183,6 @@ class Record(_Database):
 
 def _generator_plastic_garbage(week_year:WeekYear) -> ScheduleGenerated:
     seed = 30
-    person_needed = 1
     # seed will be an offset of index
     seed = abs(seed) + 5
     # randomness does not really matter here, so anything will do
@@ -166,7 +200,7 @@ def _generator_plastic_garbage(week_year:WeekYear) -> ScheduleGenerated:
         return (None, None)
 
 def _generator_organic_garbage(week_year:WeekYear) -> ScheduleGenerated:
-    seed = 4
+    seed = 8
     # seed will be an offset of index
     seed = abs(seed) + 5
     # randomness does not really matter here, so anything will do
@@ -212,7 +246,7 @@ def _generator_toilet_cleaning(week_year:WeekYear) -> ScheduleGenerated:
     seed = abs(seed) + 5
     # randomness does not really matter here, so anything will do
     seed = ((seed + 271) ^ (seed << 1))
-    names = ("Waqar", "Isabelle", "Sam", "Evelin", "Amina",)
+    names = ("Waqar", "Isabelle", "Sam", "Evelin", "Amina", "Patti")
     BOUND = len(names)
     
     week_no, year = tuple_week_year(week_year)
@@ -222,7 +256,7 @@ def _generator_toilet_cleaning(week_year:WeekYear) -> ScheduleGenerated:
     return (name_list, None)
 
 schedule = Schedule()
-schedule.add_task("House Vaccuming", None, 2, 10, None)
+schedule.add_task("House Vacuuming", None, 2, 27, None)
 schedule.add_task("Kitchen Cleaning", None, 2, 1, None)
 schedule.add_task("Basement Cleaning", None, 1, 2, None)
 schedule.add_task("Plastic Garbage", _generator_plastic_garbage)

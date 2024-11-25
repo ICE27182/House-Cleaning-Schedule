@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    </head>
+    <body>
+        <h1>Ip and Domain</h1>
+        <h2>Why using an ip address but not some normal words like goole.com?</h2>
+        <p>
+            Ultimately, we do need ip address, the series of numbers, to access a website.
+        </p>
+        <p>
+            We can access google.com with words instead of something like 142.250.179.174
+            because we have DNS, Domain Name System, a bridge between the name and 
+            numbers.
+        </p>
+        <p>
+            However, this is a local website, meaning you can only access this website
+            if you are connecting to the house's wifi, so a public DNS server obviously
+            has no access to it and thus cannot help you with it. And even if it can
+            access the local server, someone need to pay for the service, who is
+            definitely not me.
+        </p>
+
+        <h2>What alternatives do we have?</h2>
+        <p>
+            We do not have a dns server, but we do have a router that can serve
+            similar functionality. 
+            Unfortunately, no one know the administratior password.
+        </p>
+        <p>
+            The most simple method is to let your browser remember the ip so it can
+            auto-complete the address for you.
+        </p>
+        <p>
+            If you are using a laptop or a pc, you can also modify the "hosts" file
+            to set a customed name for the ip address, so you only need to type in the
+            customed name next time you need to access the website
+        </p>
+        <p>
+            Although it is probably possible for me to setup a local dns server, 
+            you would still need to manually config the dns on all your devices since,
+            still, no one can access the router settings. So, i guess it is not worth
+            the trouble.
+        </p>
+
+
+        <footer>
+        </footer>
+    </body>
+</html>

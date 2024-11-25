@@ -28,7 +28,8 @@ def tuple_next_week_year(week_no:WeekNo, year:Year) -> tuple[WeekNo, Year]:
         week_no += 1
     return week_no, year
 
-def tuple_next_week_year(week_no:WeekNo, year:Year) -> tuple[WeekNo, Year]:
+def str_next_week_year(week_year:WeekYear) -> WeekYear:
+    week_no, year = tuple_week_year(week_year)
     # Dec 28
     # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
     total_week_num = date(year, 12, 28).isocalendar()[1]
@@ -36,4 +37,15 @@ def tuple_next_week_year(week_no:WeekNo, year:Year) -> tuple[WeekNo, Year]:
         week_no, year = 1, year + 1
     else:
         week_no += 1
-    return week_no, year
+    return str_week_year((week_no, year))
+
+def str_last_week_year(week_year:WeekYear) -> WeekYear:
+    week_no, year = tuple_week_year(week_year)
+    if week_no - 1 == 0:
+        # Dec 28
+        # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
+        total_week_num = date(year - 1, 12, 28).isocalendar()[1]
+        week_no, year = total_week_num, year - 1
+    else:
+        week_no -= 1
+    return str_week_year((week_no, year))

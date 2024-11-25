@@ -16,13 +16,6 @@ table {
     text-align: center;  
 }
 
-th, td {
-    /* border-style: solid; */
-    border-color: #004000;
-    border-radius: 10px;
-    border-collapse: collapse;  
-}
-
 table.center {
     margin-left: auto;
     margin-right: auto;
@@ -35,11 +28,12 @@ table.left_right {
     margin-right: auto;
     width: 100%
 }
-table.left_right th.left {
+
+.left {
     text-align: left;
     padding-left: 5%;
 }
-table.left_right th.right {
+.right {
     text-align: right;
     padding-right: 5%;
 }
@@ -49,7 +43,7 @@ th.more_info {
     width: 50%;
 }
 img.more_info {
-    width: 50%;
+    width: 100%;
 }
 
 a {
@@ -59,6 +53,11 @@ a {
 
 p.center {
     text-align: center;
+}
+
+p.more_info_current_week {
+    background: #1b2f48;
+    font-weight: bold;
 }
 
 footer {
@@ -75,4 +74,7 @@ footer {
 }
 .blue {
     color: #0000ff;
+}
+.ice {
+    color: #9cdcff;
 }
