@@ -1,6 +1,6 @@
 
 
-from .type_aliases import WeekYear, TaskDate, WeekNo, Year
+from .type_aliases import WeekYear, WeekNo, Year
 from .type_utils import tuple_week_year, str_week_year
 
 from datetime import timedelta, date
@@ -12,13 +12,12 @@ def week_year_difference(week_year1:WeekYear, week_year2:WeekYear) -> timedelta:
     date2 = date.fromisocalendar(date2[1], date2[0], 4)
     return date1 - date2
 
-def todays_week_year() -> WeekYear:
+def get_today_week_year() -> WeekYear:
     year, week_no = date.today().isocalendar()[:2]
     return str_week_year((week_no, year))
 
-
-
 def tuple_next_week_year(week_no:WeekNo, year:Year) -> tuple[WeekNo, Year]:
+    """Get one week after the given week"""
     # Dec 28
     # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
     total_week_num = date(year, 12, 28).isocalendar()[1]
@@ -29,6 +28,7 @@ def tuple_next_week_year(week_no:WeekNo, year:Year) -> tuple[WeekNo, Year]:
     return week_no, year
 
 def str_next_week_year(week_year:WeekYear) -> WeekYear:
+    """Get one week after the given week"""
     week_no, year = tuple_week_year(week_year)
     # Dec 28
     # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
@@ -40,6 +40,7 @@ def str_next_week_year(week_year:WeekYear) -> WeekYear:
     return str_week_year((week_no, year))
 
 def str_last_week_year(week_year:WeekYear) -> WeekYear:
+    """Get one week before the given week"""
     week_no, year = tuple_week_year(week_year)
     if week_no - 1 == 0:
         # Dec 28

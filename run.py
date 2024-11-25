@@ -1,6 +1,14 @@
 from app import create_app
 from app import record
+
+# When "Next Week" is pressed, future week will be generated and stored in
+# records. However, any modification of future week record does not make sense
+# and even though it is blank, it will simply waste memory and disk space.
+# Therefore, future data will be deleted every time the program starts
+# 
+# As for why I store future week data in record, I am lazy. It can be optimized
 record.strip_future_data()
+
 app = create_app()
 
 from flask import redirect

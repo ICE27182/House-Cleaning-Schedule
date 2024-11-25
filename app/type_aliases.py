@@ -1,6 +1,7 @@
 
+
 from datetime import date
-from os import PathLike
+from os import PathLike # To be imported by other modules
 from typing import Callable
 
 type Name = str
@@ -11,13 +12,15 @@ type WeekNo = int
 type Year = int
 type Day = None | int
 
-type ScheduleGenerator = Callable[[WeekYear]]
+# mainly associated with database.Schedule
+type ScheduleGenerator = Callable[[WeekYear], ScheduleGenerated]
 type ScheduleGenerated = tuple[None | tuple[Name], TaskDate]
 type ScheduleGet = dict[TaskName: ScheduleGenerated]
-
+# mainly associated with database.Record
 type RecordGet = dict[TaskName: tuple[dict[Name:bool], str]]
 type RecordData = dict[WeekYear: RecordGet]
 
+# html_utils
 type RowNo = int
 type ColNo = int
 

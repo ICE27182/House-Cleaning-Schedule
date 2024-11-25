@@ -15,11 +15,18 @@ def tuple_week_year(week_year:WeekYear) -> tuple[WeekNo, Year]:
         raise ValueError("week should be in [1, 53] and year should be in [1, 9999]")
     return (week_no, year)
 
+
 def date_week_year(week_year:WeekYear) -> date:
+    """Return a `date` object of the given week. The day is default to Monday"""
     week_no, year = tuple_week_year(week_year)
     return date.fromisocalendar(year, week_no, 1)
 
 def task_date_to_str(task_date:TaskDate, week_year:WeekYear) -> str:
+    """
+    Transform TaskDate to a more readable string.
+        None -> date of Monday to Sunday
+        `date` -> dd/mm/yyyy
+    """
     week_no, year = tuple_week_year(week_year)
     if task_date is None:
         monday = date.fromisocalendar(year, week_no, 1)
@@ -33,17 +40,8 @@ def task_date_to_str(task_date:TaskDate, week_year:WeekYear) -> str:
         return f"{task_date.day}/{task_date.month}/{task_date.year}"
 
 def taskname_to_var_name(taskname:TaskName) -> str:
+    """
+    Transform taskname to lowercase string connected with _, so it can be
+    used as a variable name or a part of a url
+    """
     return taskname.lower().replace(' ', '_')
-
-if __name__ == "__main__":
-    assert(str_week_year((52, 2024)) == "52 2024")
-    assert(str_week_year((53, 2718)) == "53 2718")
-    assert(str_week_year((6, 2020)) == "6 2020")
-    assert(str_week_year((6, 2023)) == "6 2023")
-
-    assert(tuple_week_year("52 2024") == (52, 2024))
-    assert(tuple_week_year("53 2718") == (53, 2718))
-    assert(tuple_week_year("6 2020") == (6, 2020))
-    assert(tuple_week_year("6 2023") == (6, 2023))
-
-    print("\nSuccessful\n")

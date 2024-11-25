@@ -3,7 +3,7 @@ from .url_prefixes import MORE_INFO_URL_PREFIX
 from .type_aliases import TaskName, WeekYear, RecordGet, Name, ScheduleGet
 from .html_utils import HtmlTable, html_a, html_p
 from .type_utils import taskname_to_var_name
-from .date_utils import todays_week_year, str_last_week_year, str_next_week_year
+from .date_utils import get_today_week_year, str_last_week_year, str_next_week_year
 from .database import record, schedule, Record, Schedule
 from flask import Blueprint, render_template
 
@@ -34,7 +34,7 @@ class MoreInfo:
     def html_table(self, record:Record, schedule:Schedule, prior_weeks:int = 3, future_weeks:int = 5) -> str:
         # prior + current + future
         rows = prior_weeks + 1 + future_weeks
-        this_week_year = todays_week_year()
+        this_week_year = get_today_week_year()
         table = HtmlTable(rows, 2, "center")
         # Prior weeks and current week
         for n in range(-prior_weeks, future_weeks + 1):
