@@ -31,13 +31,19 @@ class _Database(ABC):
 class Schedule(_Database):
     names:tuple[Name] = (
         'Justin', 'Sam', 
-        'Davide', 'Sasa', 
-        'Nil', 'Waqar', 
+        'Davide', 'Saša', 
+        'Nil', 
+        # 'Waqar', 
+        'Hamna',
         'Hannah', 'Isabelle', 
         'Korina', 'Evelin', 
         'Adarsh', 'Gregor', 
         'Swastika', 'Ismail',
-        'Pati', 'Amina',
+        'Pati', 
+        # 'Amina',
+        'Jehanzeb',
+        'Dongfang', 'Marton'
+        
     )
     
     def __init__(self) -> None:
@@ -100,9 +106,13 @@ class Schedule(_Database):
         def generate(week_year:WeekYear) -> ScheduleGenerated:
             week_no, year = tuple_week_year(week_year)
             # seed is only used as an offset for now
-            index = seed + year * 12 + week_no
-            name_list = tuple((Schedule.names[(index + i * STEP) % BOUND]
-                         for i in range(person_needed)))
+            # A year usually has 52 weeks, ocassionally 53 weeks
+            # The most accurate approach would be to get how many
+            # weeks have past altogether, but add it yourself if
+            # you really want
+            index = seed + year * 53 + week_no
+            name_list = tuple([Schedule.names[(index + i * STEP) % BOUND]
+                         for i in range(person_needed)])
             task_date = (None if day is None else 
                          date.fromisocalendar(year, week_no, day))
             return (name_list, task_date)
@@ -275,7 +285,11 @@ def _generator_plastic_garbage(week_year:WeekYear) -> ScheduleGenerated:
     week_no, year = tuple_week_year(week_year)
     # Odd week for plastic
     if week_no % 2 == 1:
-        index = seed + year * 12 + week_no // 2
+        # A year usually has 52 weeks, ocassionally 53 weeks
+        # The most accurate approach would be to get how many
+        # weeks have past altogether, but add it yourself if
+        # you really want that
+        index = seed + year * 53 + week_no // 2
         name_list = (Schedule.names[(index) % BOUND], )
         # Monday
         # The garbage will be collected on Tuseday
@@ -294,7 +308,11 @@ def _generator_organic_garbage(week_year:WeekYear) -> ScheduleGenerated:
     week_no, year = tuple_week_year(week_year)
     # Even week for Organic
     if week_no % 2 == 0:
-        index = seed + year * 12 + week_no // 2
+        # A year usually has 52 weeks, ocassionally 53 weeks
+        # The most accurate approach would be to get how many
+        # weeks have past altogether, but add it yourself if
+        # you really want that
+        index = seed + year * 53 + week_no // 2
         name_list = (Schedule.names[(index) % BOUND], )
         # Monday
         # The garbage will be collected on Tuseday
@@ -324,7 +342,11 @@ def _generator_cardboard_garbage(week_year:WeekYear) -> ScheduleGenerated:
         
     week_no, year = tuple_week_year(week_year)
     if is_cardboard_pre_week():
-        index = seed + year * 12 + week_no // 12
+        # A year usually has 52 weeks, ocassionally 53 weeks
+        # The most accurate approach would be to get how many
+        # weeks have past altogether, but add it yourself if
+        # you really want that
+        index = seed + year * 53 + week_no // 12
         name_list = (Schedule.names[(index) % BOUND], )
         # Sunday
         # The garbage will be collected on Monday
@@ -340,19 +362,32 @@ def _generator_toilet_cleaning(week_year:WeekYear) -> ScheduleGenerated:
     seed = ((seed + 271) ^ (seed << 1))
     # We need a separate name list here because not every one living in the
     # house use this toilet
-    names = ("Waqar", "Isabelle", "Sam", "Evelin", "Amina", "Patti")
+    names = (
+        # "Waqar", 
+        'Marton',
+        'Dongfang',
+        "Isabelle", 
+        "Sam", 
+        "Evelin", 
+        # "Amina", 
+        "Patti", 
+        )
     BOUND = len(names)
     
     week_no, year = tuple_week_year(week_year)
     
-    index = seed + year * 12 + week_no
+    # A year usually has 52 weeks, ocassionally 53 weeks
+    # The most accurate approach would be to get how many
+    # weeks have past altogether, but add it yourself if
+    # you really want that
+    index = seed + year * 53 + week_no
     name_list = (names[(index) % BOUND], )
-    return (name_list, None)
+    return (name_list, None)    
 
 schedule = Schedule()
-schedule.add_task("House Vacuuming", None, 2, 27, None)
-schedule.add_task("Kitchen Cleaning", None, 2, 1, None)
-schedule.add_task("Basement Cleaning", None, 1, 2, None)
+schedule.add_task("House Vacuuming", None, 2, 4, None)
+schedule.add_task("Kitchen Cleaning", None, 2, 91, None)
+schedule.add_task("Basement Cleaning", None, 1, 5, None)
 schedule.add_task("Plastic Garbage", _generator_plastic_garbage)
 schedule.add_task("Organic Garbage", _generator_organic_garbage)
 schedule.add_task("Cardboard Garbage", _generator_cardboard_garbage)

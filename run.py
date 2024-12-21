@@ -7,7 +7,7 @@ from app import record
 # Therefore, future data will be deleted every time the program starts
 # 
 # As for why I store future week data in record, I am lazy. It can be optimized
-record.strip_future_data()
+record.strip_future_data(threshold=2)
 
 app = create_app()
 

@@ -31,7 +31,7 @@ class MoreInfo:
     def html_filename_format(taskname:str) -> str:
         return taskname.lower().replace(' ', '_')
 
-    def html_table(self, record:Record, schedule:Schedule, prior_weeks:int = 3, future_weeks:int = 5) -> str:
+    def html_table(self, record:Record, schedule:Schedule, prior_weeks:int = 3, future_weeks:int = 1) -> str:
         # prior + current + future
         rows = prior_weeks + 1 + future_weeks
         this_week_year = get_today_week_year()
