@@ -13,23 +13,15 @@ from .type_aliases import PathLike
 from .type_aliases import ScheduleGenerator, ScheduleGenerated, ScheduleGet
 from .type_aliases import RecordGet, RecordData
 from .type_utils import weekyear_to_tuple, weekyear_to_date, taskdate_to_str
-from .date_utils import week_difference
+from .date_utils import week_difference, is_past
 
-from abc import ABC, abstractmethod
 import json
 import os.path
-from datetime import date, timedelta
+from datetime import date
 
 
 
-class _Database(ABC):
-    @abstractmethod
-    def __getitem__():
-        pass
-
-
-
-class Schedule(_Database):
+class Schedule:
     names:tuple[Name] = (
         'Justin', 'Sam', 
         'Davide', 'Saša', 
@@ -127,7 +119,9 @@ class Schedule(_Database):
 
 
 
-class Record(_Database):
+class Record:
+    NO_FOUND = "404_NO_FOUND :("
+    RECORD_NO_FOUND:RecordGet = {NO_FOUND:()}
     def __init__(self, schedule:Schedule, path = None) -> None:
         super().__init__()
         self.data:RecordData = {}
@@ -167,7 +161,8 @@ class Record(_Database):
             self.path = path
         with open(self.path, 'w') as json_file:
             json.dump(self.data, json_file)
-    
+
+
     def strip_past_records(self, path:PathLike|bool = True, threshold:int=54) -> None:
         """
         Delete old data up to `threshold` days before and store the deleted
@@ -254,9 +249,21 @@ class Record(_Database):
     
 
     def __getitem__(self, weekyear:WeekYear) -> RecordGet:
+        """
+        Return the records for the given `weekyear`
+
+        If the queried record cannot be found
+            If a future or present `weekyear` is given, records will be 
+            generated and returned
+            If a past `weekyear` is given, `Record.RECORD_NO_FOUND` will return
+        """
         if weekyear not in self.data:
-            self.new_week(weekyear)
+            if is_past(weekyear):
+                return Record.RECORD_NO_FOUND
+            else:
+                self.new_week(weekyear)
         return self.data[weekyear]
+
 
     def new_week(self, weekyear:WeekYear) -> None:
         """

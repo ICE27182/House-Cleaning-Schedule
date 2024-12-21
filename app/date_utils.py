@@ -47,3 +47,15 @@ def last_week_weekyear(week_year:WeekYear) -> WeekYear:
     else:
         week_no -= 1
     return tuple_to_weekyear((week_no, year))
+
+def is_present(weekyear:WeekYear) -> bool:
+    """Return True if the given `weekyear` is the curent week"""
+    return week_difference(get_today_weekyear(), weekyear) == 0
+
+def is_past(weekyear:WeekYear) -> bool:
+    """Return True if the given `weekyear` is before the current week"""
+    return week_difference(get_today_weekyear(), weekyear) > 0
+
+def is_future(weekyear:WeekYear) -> bool:
+    """Return True if the given `weekyear` is after the current week"""
+    return week_difference(get_today_weekyear(), weekyear) < 0

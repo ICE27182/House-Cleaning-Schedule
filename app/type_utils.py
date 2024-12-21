@@ -3,6 +3,7 @@ from .type_aliases import WeekYear, WeekNo, Year, TaskDate, TaskName
 from datetime import date
 
 def tuple_to_weekyear(week_year:tuple[WeekNo, Year]) -> WeekYear:
+    
     week_no:WeekNo = week_year[0]
     year:Year = week_year[1]
     if not (0 < week_no <= 53 and 0 < year <= 9999):
