@@ -1,9 +1,9 @@
 
 from .url_prefixes import BUTTONS_URL_PREFIX, CLEANING_SCHEDULES_URL_PREFIX
 from .type_aliases import RecordGet, WeekYear, Name, TaskName
-from .type_utils import taskname_to_var_name, str_week_year
+from .type_utils import taskname_to_url_part, tuple_to_weekyear
 from .more_info import MORE_INFO_URL_PREFIX
-from .date_utils import get_today_week_year, tuple_week_year, tuple_next_week_year
+from .date_utils import get_today_weekyear, weekyear_to_tuple, next_week_weekyear
 from .html_utils import HtmlTable, html_a, html_p
 from .database import record
 
@@ -32,8 +32,8 @@ class Button:
         self.no = no
         # Generate url automatically with taskname and no
         buttons.add_url_rule(
-            f"/{taskname_to_var_name(taskname)}{no}",
-            endpoint = f"{taskname_to_var_name(taskname)}{no}",
+            f"/{taskname_to_url_part(taskname)}{no}",
+            endpoint = f"{taskname_to_url_part(taskname)}{no}",
             view_func= self._create_route()
         ) 
 
@@ -53,7 +53,7 @@ class Button:
         """Return the full url of the button"""
         return (
             f"{CLEANING_SCHEDULES_URL_PREFIX}{BUTTONS_URL_PREFIX}/" +
-            f"{taskname_to_var_name(self.taskname)}{self.no}"
+            f"{taskname_to_url_part(self.taskname)}{self.no}"
         )
 
 # Instantiate all buttons
@@ -85,19 +85,21 @@ class Current:
     
     def reset_to_current_week(self) -> None:
         """Setter: Set to current week"""
-        self.week_no, self.year = tuple_week_year(get_today_week_year())
+        self.week_no, self.year = weekyear_to_tuple(get_today_weekyear())
     
     def next_week(self) -> None:
         """Setter: Set to next week"""
-        self.week_no, self.year = tuple_next_week_year(self.week_no, self.year)
+        self.week_no, self.year = weekyear_to_tuple(
+            next_week_weekyear(self.week_no, self.year)
+        )
     
     def current_week_record(self) -> RecordGet:
         """Retrieve a dictionary with"""
-        return record[str_week_year((self.week_no, self.year))]
+        return record[tuple_to_weekyear((self.week_no, self.year))]
     
     def week_year(self) -> WeekYear:
         """Getter method"""
-        return str_week_year((self.week_no, self.year))
+        return tuple_to_weekyear((self.week_no, self.year))
 
     def html_table(self) -> str:
         """
@@ -124,7 +126,7 @@ class Current:
             table[row_no, 3] += html_a(
                 (
                     CLEANING_SCHEDULES_URL_PREFIX + MORE_INFO_URL_PREFIX + 
-                    f"/{taskname_to_var_name(taskname)}"
+                    f"/{taskname_to_url_part(taskname)}"
                 ),
                 "More Info"
             )

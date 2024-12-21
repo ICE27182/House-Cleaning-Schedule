@@ -1,7 +1,7 @@
 
 
 from .url_prefixes import CLEANING_SCHEDULES_URL_PREFIX
-from .date_utils import get_today_week_year
+from .date_utils import get_today_weekyear
 from .database import record
 from .current import current
 
@@ -40,7 +40,7 @@ def route_cleaning_schedules():
     # to the current week, and another person visit the website before 
     # `current` reset, they can see the week number in red so it is less likely
     # for them to mistake the schedule shown for the ongoing schedule
-    if get_today_week_year() != week_year:
+    if get_today_weekyear() != week_year:
         week_year = f"<span class=\"red\">{week_year}</span>"
     # `record` will write to the disk every time the page is reloaded
     record.write()

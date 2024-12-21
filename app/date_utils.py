@@ -1,23 +1,32 @@
 
 
 from .type_aliases import WeekYear, WeekNo, Year
-from .type_utils import tuple_week_year, str_week_year
+from .type_utils import weekyear_to_tuple, tuple_to_weekyear
 
 from datetime import timedelta, date
 
-def week_year_difference(week_year1:WeekYear, week_year2:WeekYear) -> timedelta:
-    date1 = tuple_week_year(week_year1)
-    date2 = tuple_week_year(week_year2)
-    date1 = date.fromisocalendar(date1[1], date1[0], 4)
-    date2 = date.fromisocalendar(date2[1], date2[0], 4)
-    return date1 - date2
+def week_difference(date1:date, date2:date) -> int:
+    """
+    Return 0 if the `date1` and `date2` are in the same week
+    Return a positive integer if `date1` is after `date2` 
+        e.g. date1 = date(2024, 12, 21), date2 = date(2024, 8, 5)
+    Return a negative integer if `date1` is before `date2`
+        e.g. date1 = date(2024, 8, 5), date2 = date(2024, 12, 21)
+    """
+    year1, week_no1, _ = date.isocalendar(date1)
+    year2, week_no2, _ = date.isocalendar(date2)
+    date1 = date.fromisocalendar(year1, week_no1, 1)
+    date2 = date.fromisocalendar(year2, week_no2, 1)
+    difference:timedelta = date1 - date2
+    return difference.days // 7
 
-def get_today_week_year() -> WeekYear:
+def get_today_weekyear() -> WeekYear:
     year, week_no = date.today().isocalendar()[:2]
-    return str_week_year((week_no, year))
+    return tuple_to_weekyear((week_no, year))
 
-def tuple_next_week_year(week_no:WeekNo, year:Year) -> tuple[WeekNo, Year]:
-    """Get one week after the given week"""
+def next_week_weekyear(week_year:WeekYear) -> WeekYear:
+    """Get `WeekYear` one week after the given week"""
+    week_no, year = weekyear_to_tuple(week_year)
     # Dec 28
     # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
     total_week_num = date(year, 12, 28).isocalendar()[1]
@@ -25,23 +34,11 @@ def tuple_next_week_year(week_no:WeekNo, year:Year) -> tuple[WeekNo, Year]:
         week_no, year = 1, year + 1
     else:
         week_no += 1
-    return week_no, year
+    return tuple_to_weekyear((week_no, year))
 
-def str_next_week_year(week_year:WeekYear) -> WeekYear:
-    """Get one week after the given week"""
-    week_no, year = tuple_week_year(week_year)
-    # Dec 28
-    # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
-    total_week_num = date(year, 12, 28).isocalendar()[1]
-    if week_no + 1 > total_week_num:
-        week_no, year = 1, year + 1
-    else:
-        week_no += 1
-    return str_week_year((week_no, year))
-
-def str_last_week_year(week_year:WeekYear) -> WeekYear:
-    """Get one week before the given week"""
-    week_no, year = tuple_week_year(week_year)
+def last_week_weekyear(week_year:WeekYear) -> WeekYear:
+    """Get `WeekYear` one week before the given week"""
+    week_no, year = weekyear_to_tuple(week_year)
     if week_no - 1 == 0:
         # Dec 28
         # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
@@ -49,4 +46,4 @@ def str_last_week_year(week_year:WeekYear) -> WeekYear:
         week_no, year = total_week_num, year - 1
     else:
         week_no -= 1
-    return str_week_year((week_no, year))
+    return tuple_to_weekyear((week_no, year))

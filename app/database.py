@@ -12,7 +12,8 @@ from .type_aliases import WeekYear, Name, TaskName, Day
 from .type_aliases import PathLike
 from .type_aliases import ScheduleGenerator, ScheduleGenerated, ScheduleGet
 from .type_aliases import RecordGet, RecordData
-from .type_utils import tuple_week_year, date_week_year, task_date_to_str
+from .type_utils import weekyear_to_tuple, weekyear_to_date, taskdate_to_str
+from .date_utils import week_difference
 
 from abc import ABC, abstractmethod
 import json
@@ -66,7 +67,7 @@ class Schedule(_Database):
         (and optionally `day`) are passed in. Then a schedule generator will be
         generated automatically with `Schedule._generator_template`.
         Or, you can pass a function like 
-        `def _generator_taskname(week_year:WeekYear) -> ScheduleGenerated`
+        `def _generator_taskname(weekyear:WeekYear) -> ScheduleGenerated`
 
         If generator is None, `person_needed` and `seed` will be used.
         `day` will also be used if it is not None. The three arguments should
@@ -103,8 +104,8 @@ class Schedule(_Database):
         # randomness does not really matter here, so anything will do
         seed = abs(seed + 5)
         seed = ((seed + 271) ^ (seed << 1))
-        def generate(week_year:WeekYear) -> ScheduleGenerated:
-            week_no, year = tuple_week_year(week_year)
+        def generate(weekyear:WeekYear) -> ScheduleGenerated:
+            week_no, year = weekyear_to_tuple(weekyear)
             # seed is only used as an offset for now
             # A year usually has 52 weeks, ocassionally 53 weeks
             # The most accurate approach would be to get how many
@@ -118,10 +119,10 @@ class Schedule(_Database):
             return (name_list, task_date)
         return generate
     
-    def __getitem__(self, week_year:WeekYear) -> ScheduleGet:
+    def __getitem__(self, weekyear:WeekYear) -> ScheduleGet:
         out:ScheduleGet = {}
         for taskname, generator in self.tasks.items():
-            out[taskname] = generator(week_year)
+            out[taskname] = generator(weekyear)
         return out
 
 
@@ -167,10 +168,13 @@ class Record(_Database):
         with open(self.path, 'w') as json_file:
             json.dump(self.data, json_file)
     
-    def strip_old_data(self, path:PathLike|bool = True, threshold:int=365) -> None:
+    def strip_past_records(self, path:PathLike|bool = True, threshold:int=54) -> None:
         """
         Delete old data up to `threshold` days before and store the deleted
         data at `path`.
+
+        If threshold is negative, it will remove past, present and part of
+        the future records that exceeds the threshold.
 
         The file on disk will not change until method `write` is called.
 
@@ -182,22 +186,22 @@ class Record(_Database):
             """Used to generate filename"""
             min = date.today()
             max = date(1, 1, 1)
-            for week_year in stripped.keys():
-                week_year = date_week_year(week_year)
-                if week_year < min:
-                    min = week_year
-                if week_year > max:
-                    max = week_year
+            for weekyear in stripped.keys():
+                weekyear = weekyear_to_date(weekyear)
+                if weekyear < min:
+                    min = weekyear
+                if weekyear > max:
+                    max = weekyear
             return (min, max)
 
         stripped = {}
         # Find old data and store them in `stripped`
-        for week_year in self.data.keys():
-            if date.today() - date_week_year(week_year) > timedelta(threshold):
-                stripped[week_year] = self.data[week_year]
+        for weekyear in self.data.keys():
+            if week_difference(date.today(), weekyear_to_date(weekyear)) > threshold:
+                stripped[weekyear] = self.data[weekyear]
         # Delete old data
-        for week_year in stripped.keys():
-            del self.data[week_year]
+        for weekyear in stripped.keys():
+            del self.data[weekyear]
         # Save old data to file
         if path != False and len(stripped) != 0:
             if path == True:
@@ -206,10 +210,13 @@ class Record(_Database):
             with open(path, 'w') as json_file:
                 json.dump(stripped, json_file)
     
-    def strip_future_data(self, path:PathLike|bool = False, threshold:int=0) -> None:
+    def strip_future_records(self, path:PathLike|bool = False, threshold:int=0) -> None:
         """
         Delete future data from `threshold` days onwards and store the deleted
         data at `path`.
+
+        If threshold is negative, it will remove future, present and part of
+        the past records that exceeds the threshold.
 
         The file on disk will not change until method `write` is called.
 
@@ -221,22 +228,22 @@ class Record(_Database):
             """Used to generate filename"""
             min = date(9999, 12, 31)
             max = date.today()
-            for week_year in stripped.keys():
-                week_year = date_week_year(week_year)
-                if week_year < min:
-                    min = week_year
-                if week_year > max:
-                    max = week_year
+            for weekyear in stripped.keys():
+                weekyear = weekyear_to_date(weekyear)
+                if weekyear < min:
+                    min = weekyear
+                if weekyear > max:
+                    max = weekyear
             return (min, max)
 
         stripped = {}
         # Find future data and store them in `stripped`
-        for week_year in self.data.keys():
-            if date_week_year(week_year) - date.today() > timedelta(threshold):
-                stripped[week_year] = self.data[week_year]
+        for weekyear in self.data.keys():
+            if week_difference(date.today(), weekyear_to_date(weekyear)) < -threshold:
+                stripped[weekyear] = self.data[weekyear]
         # Delete future data
-        for week_year in stripped.keys():
-            del self.data[week_year]
+        for weekyear in stripped.keys():
+            del self.data[weekyear]
         # Save future data to file
         if path != False and len(stripped) != 0:
             if path == True:
@@ -246,18 +253,18 @@ class Record(_Database):
                 json.dump(stripped, json_file)
     
 
-    def __getitem__(self, week_year:WeekYear) -> RecordGet:
-        if week_year not in self.data:
-            self.new_week(week_year)
-        return self.data[week_year]
+    def __getitem__(self, weekyear:WeekYear) -> RecordGet:
+        if weekyear not in self.data:
+            self.new_week(weekyear)
+        return self.data[weekyear]
 
-    def new_week(self, week_year:WeekYear) -> None:
+    def new_week(self, weekyear:WeekYear) -> None:
         """
-        Add `week_year` week to `record`. If this week has already existed,
+        Add `weekyear` week to `record`. If this week has already existed,
         it will be updated. New week is generated with `schedule`
         """
-        self.data[week_year] = {}
-        week_schedule:ScheduleGet = self.schedule[week_year]
+        self.data[weekyear] = {}
+        week_schedule:ScheduleGet = self.schedule[weekyear]
         for taskname, task_info in week_schedule.items():
             task_info:ScheduleGenerated
             # for example, plastic garbage is taken out twice a week so
@@ -265,9 +272,9 @@ class Record(_Database):
             # leading to an empty task_info[0], which is supposed to be
             # a name list
             if task_info[0] is not None:
-                self.data[week_year][taskname] = (
+                self.data[weekyear][taskname] = (
                     {name:False for name in task_info[0]},
-                    task_date_to_str(task_info[1], week_year)
+                    taskdate_to_str(task_info[1], weekyear)
                 )
     
 
@@ -275,14 +282,14 @@ class Record(_Database):
 """
 Generators for `schedule`
 """
-def _generator_plastic_garbage(week_year:WeekYear) -> ScheduleGenerated:
+def _generator_plastic_garbage(weekyear:WeekYear) -> ScheduleGenerated:
     seed = 30
     # randomness does not really matter here, so anything will do
     seed = abs(seed + 5)
     seed = ((seed + 271) ^ (seed << 1))
     BOUND = len(Schedule.names)
 
-    week_no, year = tuple_week_year(week_year)
+    week_no, year = weekyear_to_tuple(weekyear)
     # Odd week for plastic
     if week_no % 2 == 1:
         # A year usually has 52 weeks, ocassionally 53 weeks
@@ -298,14 +305,14 @@ def _generator_plastic_garbage(week_year:WeekYear) -> ScheduleGenerated:
     else:
         return (None, None)
 
-def _generator_organic_garbage(week_year:WeekYear) -> ScheduleGenerated:
+def _generator_organic_garbage(weekyear:WeekYear) -> ScheduleGenerated:
     seed = 8
     # randomness does not really matter here, so anything will do
     seed = abs(seed + 5)
     seed = ((seed + 271) ^ (seed << 1))
     BOUND = len(Schedule.names)
 
-    week_no, year = tuple_week_year(week_year)
+    week_no, year = weekyear_to_tuple(weekyear)
     # Even week for Organic
     if week_no % 2 == 0:
         # A year usually has 52 weeks, ocassionally 53 weeks
@@ -321,7 +328,7 @@ def _generator_organic_garbage(week_year:WeekYear) -> ScheduleGenerated:
     else:
         return (None, None)
     
-def _generator_cardboard_garbage(week_year:WeekYear) -> ScheduleGenerated:
+def _generator_cardboard_garbage(weekyear:WeekYear) -> ScheduleGenerated:
     seed = 5
     # randomness does not really matter here, so anything will do
     seed = abs(seed + 5)
@@ -340,7 +347,7 @@ def _generator_cardboard_garbage(week_year:WeekYear) -> ScheduleGenerated:
             return True
         return False
         
-    week_no, year = tuple_week_year(week_year)
+    week_no, year = weekyear_to_tuple(weekyear)
     if is_cardboard_pre_week():
         # A year usually has 52 weeks, ocassionally 53 weeks
         # The most accurate approach would be to get how many
@@ -355,7 +362,7 @@ def _generator_cardboard_garbage(week_year:WeekYear) -> ScheduleGenerated:
     else:
         return (None, None)
 
-def _generator_toilet_cleaning(week_year:WeekYear) -> ScheduleGenerated:
+def _generator_toilet_cleaning(weekyear:WeekYear) -> ScheduleGenerated:
     seed = 6
     # randomness does not really matter here, so anything will do
     seed = abs(seed + 5)
@@ -374,7 +381,7 @@ def _generator_toilet_cleaning(week_year:WeekYear) -> ScheduleGenerated:
         )
     BOUND = len(names)
     
-    week_no, year = tuple_week_year(week_year)
+    week_no, year = weekyear_to_tuple(weekyear)
     
     # A year usually has 52 weeks, ocassionally 53 weeks
     # The most accurate approach would be to get how many

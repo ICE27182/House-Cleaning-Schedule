@@ -2,8 +2,8 @@
 from .url_prefixes import MORE_INFO_URL_PREFIX
 from .type_aliases import TaskName, WeekYear, RecordGet, Name, ScheduleGet
 from .html_utils import HtmlTable, html_a, html_p
-from .type_utils import taskname_to_var_name
-from .date_utils import get_today_week_year, str_last_week_year, str_next_week_year
+from .type_utils import taskname_to_url_part
+from .date_utils import get_today_weekyear, last_week_weekyear, next_week_weekyear
 from .database import record, schedule, Record, Schedule
 from flask import Blueprint, render_template
 
@@ -12,11 +12,11 @@ more_info = Blueprint("more_info", __name__)
 def _week_year_n_week_diff(week_year:WeekYear, n:int) -> WeekYear:
     if n >= 0:
         for _ in range(n):
-            week_year = str_next_week_year(week_year)
+            week_year = next_week_weekyear(week_year)
     else:
         n = -n
         for _ in range(n):
-            week_year = str_last_week_year(week_year)
+            week_year = last_week_weekyear(week_year)
     return week_year
 class MoreInfo:
     def __init__(self, taskname:TaskName, html_path:str=None) -> None:
@@ -34,7 +34,7 @@ class MoreInfo:
     def html_table(self, record:Record, schedule:Schedule, prior_weeks:int = 3, future_weeks:int = 1) -> str:
         # prior + current + future
         rows = prior_weeks + 1 + future_weeks
-        this_week_year = get_today_week_year()
+        this_week_year = get_today_weekyear()
         table = HtmlTable(rows, 2, "center")
         # Prior weeks and current week
         for n in range(-prior_weeks, future_weeks + 1):
@@ -82,8 +82,8 @@ def create_route(taskname:TaskName):
 
 for taskname in tasknames:
     more_info.add_url_rule(
-        f"/{taskname_to_var_name(taskname)}",
-        endpoint = taskname_to_var_name(taskname),
+        f"/{taskname_to_url_part(taskname)}",
+        endpoint = taskname_to_url_part(taskname),
         view_func = create_route(taskname)
     )
 

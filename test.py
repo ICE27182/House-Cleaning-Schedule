@@ -1,7 +1,7 @@
 
 from app.database import schedule
 from app.database import record
-from app.date_utils import str_last_week_year, str_next_week_year
+from app.date_utils import last_week_weekyear, next_week_weekyear
 
 # Schedule.add_task, Schedule[week_year]
 if False:
@@ -29,19 +29,33 @@ if False:
     print("-"*80 + "\n"*2)
 
 # last/next week_year
-if True:
-    assert(str_last_week_year("46 2024") == "45 2024")
-    assert(str_next_week_year("46 2024") == "47 2024")
+if False:
+    assert(last_week_weekyear("46 2024") == "45 2024")
+    assert(next_week_weekyear("46 2024") == "47 2024")
     
     week_year = "46 2024"
-    assert(str_last_week_year(str_next_week_year(week_year)) == week_year)
+    assert(last_week_weekyear(next_week_weekyear(week_year)) == week_year)
     week_year = "1 2024"
-    assert(str_last_week_year(str_next_week_year(week_year)) == week_year)
+    assert(last_week_weekyear(next_week_weekyear(week_year)) == week_year)
     week_year = "52 2024"
-    assert(str_last_week_year(str_next_week_year(week_year)) == week_year)
+    assert(last_week_weekyear(next_week_weekyear(week_year)) == week_year)
     week_year = "1 2024"
-    assert(str_next_week_year(str_last_week_year(week_year)) == week_year)
+    assert(next_week_weekyear(last_week_weekyear(week_year)) == week_year)
     week_year = "52 2024"
-    assert(str_next_week_year(str_last_week_year(week_year)) == week_year)
+    assert(next_week_weekyear(last_week_weekyear(week_year)) == week_year)
 
     print("-"*80 + "\n"*2)    
+
+
+if False:
+    from datetime import date
+    from app.date_utils import week_difference
+    date2 = date(2024, 8, 5)
+    for d in range(365):
+        print( 
+            f"{
+                ", ".join(map(str, tuple(date.isocalendar(date2 + timedelta(d)))))
+            } -- " +
+            f"{str(date2 + timedelta(d))} -- " +
+            f"{week_difference(date.today(), date2 + timedelta(d))}" 
+        )
