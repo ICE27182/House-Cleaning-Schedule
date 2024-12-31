@@ -8,52 +8,56 @@ you can make sure the behavior of __getitem__ remains
 People names are stored in this file, in Schedule.names and _generator_.*
 to be specific
 """
-from .type_aliases import WeekYear, Name, TaskName, Day
-from .type_aliases import PathLike
+from .constants import LOOKBACK_WEEKS_FOR_SCHEDULING
+from .type_aliases import WeekYear, Name, TaskName, Day, PathLike
+from .type_aliases import NameList
 from .type_aliases import ScheduleGenerator, ScheduleGenerated, ScheduleGet
 from .type_aliases import RecordGet, RecordData
 from .type_utils import weekyear_to_tuple, weekyear_to_date, taskdate_to_str
-from .date_utils import week_difference, is_past
+from .date_utils import week_difference, is_past, get_weekyear_no, last_week_weekyear
+from .namelist import namelist_all, namelist_toilet, updated_namelist
 
 import json
 import os.path
 from datetime import date
-
+from random import seed, sample
+from math import ceil
+seed(27182)
 
 
 class Schedule:
-    names:tuple[Name] = (
-        'Justin', 'Sam', 
-        'Davide', 'Saša', 
-        'Nil', 
-        # 'Waqar', 
-        'Hamna',
-        'Hannah', 'Isabelle', 
-        'Korina', 'Evelin', 
-        'Adarsh', 'Gregor', 
-        'Swastika', 'Ismail',
-        'Pati', 
-        # 'Amina',
-        'Jehanzeb',
-        'Dongfang', 'Marton'
+    # names:tuple[Name] = (
+    #     'Justin', 'Sam', 
+    #     'Davide', 'Saša', 
+    #     'Nil', 
+    #     # 'Waqar', 
+    #     'Hamna',
+    #     'Hannah', 'Isabelle', 
+    #     'Korina', 'Evelin', 
+    #     'Adarsh', 'Gregor', 
+    #     'Swastika', 'Ismail',
+    #     'Pati', 
+    #     # 'Amina',
+    #     'Jehanzeb',
+    #     'Dongfang', 'Marton'
         
-    )
+    # )
     
-    def __init__(self) -> None:
+    def __init__(self, record=None) -> None:
         """
         You will have to add tasks with method `add_task` after initiation
         """
-        super().__init__()
         # Okay, maybe i should have named it _tasks
         self.tasks:dict[TaskName: ScheduleGenerator] = {}
+        self.record = record
 
     def add_task(self, taskname:TaskName, generator:ScheduleGenerator = None, 
-                 person_needed:int = None, seed:int = None, day:Day=None) -> None:
+                 person_needed:int = None, day:Day=None, namelist = namelist_all) -> None:
         """
         Add task to instances
 
-        `taskname` can be any string, but be sure it is consistent because it
-        will be stored in `record` and thus used basically everywhere else.
+        `taskname` can be any string, but be sure it is consistent with
+        the one in `record`
 
         generator can be left as None, if `person_needed` and `seed` 
         (and optionally `day`) are passed in. Then a schedule generator will be
@@ -67,13 +71,9 @@ class Schedule:
         If `day` is not None, it should be an int in [1, 7].
         """
         # Dealing with invalid arguments
-        if not (
-            (generator is None) and (None not in (person_needed, seed))
-            or
-            (generator is not None) and ((None,) * 2 == (person_needed, seed))
-        ):
+        if generator is None == person_needed is None:
             raise ValueError(
-                "Either generator alone or both person_needed and seed must be provided."
+                "Exactly one of `generator` and `person_needed` must be provided"
             )
         if (day is not None and not (1 <= day <= 7)):
             raise ValueError("day should be between 1 and 7")
@@ -81,40 +81,66 @@ class Schedule:
                                     generator 
                                     if generator is not None else
                                     Schedule._generator_template(
-                                        person_needed, seed, day
+                                        taskname, person_needed, day, namelist
                                     )
                                )
     
     @staticmethod
-    def _generator_template(person_needed:int, seed:int, day:Day) -> ScheduleGenerator:
+    def _generator_template(taskename:TaskName, person_needed:int, day:Day, namelist:NameList) -> ScheduleGenerator:
         """
-        Only work with weekly tasks that involve every one in the house
-        Use your own generator if that is not the case (e.g. toilet cleaning)
+        Only works with weekly tasks
+        Use self-defined generator if that is not the case 
+            (e.g. toilet cleaning, garbage taking out)
         """
-        BOUND = len(Schedule.names)
-        STEP = BOUND // person_needed
-        # randomness does not really matter here, so anything will do
-        seed = abs(seed + 5)
-        seed = ((seed + 271) ^ (seed << 1))
-        def generate(weekyear:WeekYear) -> ScheduleGenerated:
+        def _get_names(last_week_names, booked:set[str], namelist:NameList) -> NameList:
+            people_not_booked = namelist.keys() - booked
+            # Someone or someones have to do more than one job
+            if len(people_not_booked) == 0:
+                people_not_booked = namelist.keys()
+            people = people_not_booked - last_week_names
+            # All People not booked (or booked but has to be chosen) have
+            # already done the same task last week, so they have to do it again
+            if len(people) == 0:
+                people = people_not_booked
+            return {name:namelist[name] for name in people}
+
+        # Here it's better if generator uses `schedule.record` instead of 
+        # the global `record`, but i am too lazy to change it
+        def generator(weekyear:WeekYear, booked:set[str] = set(), *, _taskname = taskename, _namelist = namelist) -> ScheduleGenerated:
             week_no, year = weekyear_to_tuple(weekyear)
-            # seed is only used as an offset for now
-            # A year usually has 52 weeks, ocassionally 53 weeks
-            # The most accurate approach would be to get how many
-            # weeks have past altogether, but add it yourself if
-            # you really want
-            index = seed + year * 53 + week_no
-            name_list = tuple([Schedule.names[(index + i * STEP) % BOUND]
-                         for i in range(person_needed)])
+            record_last_weeek = record[last_week_weekyear(weekyear)]
+            # `_taskname in record_last_weeek` is necessary 
+            # becuase it can be a new task or there is simply a week in which
+            # this task was deleted
+            if (record_last_weeek == Record.RECORD_NO_FOUND or 
+                _taskname not in record_last_weeek):
+                last_week_names = set()
+            else:
+                last_week_names = record_last_weeek[_taskname][0].keys()
+            names_to_choose_from = _get_names(last_week_names, booked, _namelist)
+            # assert([{name:ceil(value) for name, value in namelist_all.items() if name in names_to_choose_from} == {name:ceil(value) for name, value in names_to_choose_from.items()}])
+            names = sample(
+                tuple(names_to_choose_from.keys()), 
+                # counts = tuple(names_to_choose_from.values()),
+                counts = map(lambda x:int(round(x)), names_to_choose_from.values()),
+                k = person_needed
+            )
             task_date = (None if day is None else 
                          date.fromisocalendar(year, week_no, day))
-            return (name_list, task_date)
-        return generate
+            return (names, task_date)
+        return generator
     
     def __getitem__(self, weekyear:WeekYear) -> ScheduleGet:
         out:ScheduleGet = {}
+        booked = set()
+        if self.record is not None:
+            global namelist_all, namelist_toilet
+            namelist_all = updated_namelist(namelist_all, self.record, last_week_weekyear(weekyear), LOOKBACK_WEEKS_FOR_SCHEDULING)
+            namelist_toilet = updated_namelist(namelist_toilet, self.record, last_week_weekyear(weekyear), LOOKBACK_WEEKS_FOR_SCHEDULING)
         for taskname, generator in self.tasks.items():
-            out[taskname] = generator(weekyear)
+            out[taskname] = generator(weekyear, booked)
+            if out[taskname][0] is not None:
+                booked |= set(out[taskname][0])
         return out
 
 
@@ -129,6 +155,48 @@ class Record:
         self.schedule = schedule
         self.read()
     
+    @staticmethod
+    def print_recordget(recordget:RecordGet) -> None:
+        def parse_name_states(name_stats:dict[Name:bool]) -> str:
+            out = []
+            for name, state in name_states.items():
+                if state:
+                    out.append("\033[38;2;0;255;0m")
+                else:
+                    out.append("\033[38;2;255;0;0m")
+                out.append(f"{name:^16}\033[0m\t")
+            return "".join(out)
+
+        for taskname, info in recordget.items():
+            name_states = info[0]
+            time = info[1]
+            print(
+                f"{taskname:24}\t{time:25}\t{parse_name_states(name_states)}"
+            )
+        print('-' * 80)
+    
+    @staticmethod
+    def recordget_to_str(recordget:RecordGet) -> str:
+        def parse_name_states(name_stats:dict[Name:bool]) -> str:
+            out = []
+            for name, state in name_stats.items():
+                if state:
+                    out.append("\033[38;2;0;255;0m")
+                else:
+                    out.append("\033[38;2;255;0;0m")
+                out.append(f"{name:^16}\033[0m\t")
+            return "".join(out)
+        return "\n".join(
+            (f"{taskname:24}\t{info[1]:25}\t{parse_name_states(info[0])}"
+            for taskname, info in recordget.items())
+        ) + '\n' + '-' * 80
+
+    def print_weekyear(self, weekyear:WeekYear) -> None:
+        Record.print_recordget(self[weekyear])
+    
+    def str_weekyear(self, weekyear:WeekYear) -> str:
+        return Record.recordget_to_str(self[weekyear])
+
     def read(self, path:PathLike = None) -> bool:
         """
         (Update self.path and) Read file to self.data
@@ -289,63 +357,77 @@ class Record:
 """
 Generators for `schedule`
 """
-def _generator_plastic_garbage(weekyear:WeekYear) -> ScheduleGenerated:
-    seed = 30
-    # randomness does not really matter here, so anything will do
-    seed = abs(seed + 5)
-    seed = ((seed + 271) ^ (seed << 1))
-    BOUND = len(Schedule.names)
-
+def _get_names_NAMELIST(last_week_names, booked:set[str]) -> NameList:
+    people_not_booked = namelist_all.keys() - booked
+    # Someone or someones have to do more than one job
+    if len(people_not_booked) == 0:
+        people_not_booked = namelist_all.keys()
+    people = people_not_booked - last_week_names
+    # All People not booked (or booked but has to be chosen) have
+    # already done the same task last week, so they have to do it again
+    if len(people) == 0:
+        people = people_not_booked
+    return {name:namelist_all[name] for name in people}
+    
+def _generator_plastic_garbage(weekyear:WeekYear, booked:set[str] = set()) -> ScheduleGenerated:
     week_no, year = weekyear_to_tuple(weekyear)
-    # Odd week for plastic
+    # Odd week for plastic (OR IS IT?????)
     if week_no % 2 == 1:
-        # A year usually has 52 weeks, ocassionally 53 weeks
-        # The most accurate approach would be to get how many
-        # weeks have past altogether, but add it yourself if
-        # you really want that
-        index = seed + year * 53 + week_no // 2
-        name_list = (Schedule.names[(index) % BOUND], )
+        record_last_weeek = record[last_week_weekyear(weekyear)]
+        if (
+            record_last_weeek == Record.RECORD_NO_FOUND or 
+            "Plastic Garbage" not in record_last_weeek
+        ):
+            last_week_names = set()
+        else:
+            last_week_names = record_last_weeek["Plastic Garbage"][0].keys()
+        names_to_choose_from = _get_names_NAMELIST(last_week_names, booked)
+        names = sample(
+            tuple(names_to_choose_from.keys()), 
+            counts = map(lambda x:int(round(x)), names_to_choose_from.values()),
+            k = 1
+        )
         # Monday
-        # The garbage will be collected on Tuseday
+        # The garbage will be collected on Tuseday, so the it should be 
+        # taken out on Monday
         task_date = date.fromisocalendar(year, week_no, 1)
-        return (name_list, task_date)
+        return (names, task_date)
     else:
         return (None, None)
 
-def _generator_organic_garbage(weekyear:WeekYear) -> ScheduleGenerated:
-    seed = 8
-    # randomness does not really matter here, so anything will do
-    seed = abs(seed + 5)
-    seed = ((seed + 271) ^ (seed << 1))
-    BOUND = len(Schedule.names)
-
+def _generator_organic_garbage(weekyear:WeekYear, booked:set[str] = set()) -> ScheduleGenerated:
     week_no, year = weekyear_to_tuple(weekyear)
-    # Even week for Organic
+    # Even week for organic (OR IS IT?????)
     if week_no % 2 == 0:
-        # A year usually has 52 weeks, ocassionally 53 weeks
-        # The most accurate approach would be to get how many
-        # weeks have past altogether, but add it yourself if
-        # you really want that
-        index = seed + year * 53 + week_no // 2
-        name_list = (Schedule.names[(index) % BOUND], )
+        record_last_weeek = record[last_week_weekyear(weekyear)]
+        if (
+            record_last_weeek == Record.RECORD_NO_FOUND or
+            "Organic Garbage" not in record_last_weeek
+        ):
+            last_week_names = set()
+        else:
+            last_week_names = record_last_weeek["Organic Garbage"][0].keys()
+        names_to_choose_from = _get_names_NAMELIST(last_week_names, booked)
+        names = sample(
+            tuple(names_to_choose_from.keys()), 
+            counts = map(lambda x:int(round(x)), names_to_choose_from.values()),
+            k = 1
+        )
         # Monday
-        # The garbage will be collected on Tuseday
+        # The garbage will be collected on Tuseday, so the it should be 
+        # taken out on Monday
         task_date = date.fromisocalendar(year, week_no, 1)
-        return (name_list, task_date)
+        return (names, task_date)
     else:
         return (None, None)
     
-def _generator_cardboard_garbage(weekyear:WeekYear) -> ScheduleGenerated:
-    seed = 5
-    # randomness does not really matter here, so anything will do
-    seed = abs(seed + 5)
-    seed = ((seed + 271) ^ (seed << 1))
-    BOUND = len(Schedule.names)
-
-    # Carboard Garbage is collected every monday 
-    # in the second week of the month
-    def is_cardboard_pre_week() -> bool:
-        """The first iso week in the month"""
+def _generator_cardboard_garbage(weekyear:WeekYear, booked:set[str] = set()) -> ScheduleGenerated:
+    def _is_first_week_in_the_month(week_no, year) -> bool:
+        """
+        Carboards are taken out every the monday of the second week of the 
+        month, so we check if this week is the first week of the month, of
+        which we should take them out on sunday
+        """
         if (
             week_no 
             in
@@ -355,56 +437,65 @@ def _generator_cardboard_garbage(weekyear:WeekYear) -> ScheduleGenerated:
         return False
         
     week_no, year = weekyear_to_tuple(weekyear)
-    if is_cardboard_pre_week():
-        # A year usually has 52 weeks, ocassionally 53 weeks
-        # The most accurate approach would be to get how many
-        # weeks have past altogether, but add it yourself if
-        # you really want that
-        index = seed + year * 53 + week_no // 12
-        name_list = (Schedule.names[(index) % BOUND], )
+    if _is_first_week_in_the_month(week_no, year):
+        record_last_weeek = record[last_week_weekyear(weekyear)]
+        if (
+            record_last_weeek == Record.RECORD_NO_FOUND or
+            "Cardboard Garbage" not in record_last_weeek
+        ):
+            last_week_names = set()
+        else:
+            last_week_names = record_last_weeek["Cardboard Garbage"][0].keys()
+        names_to_choose_from = _get_names_NAMELIST(last_week_names, booked)
+        names = sample(
+            tuple(names_to_choose_from.keys()), 
+            counts = map(lambda x:int(round(x)), names_to_choose_from.values()),
+            k = 1
+        )
         # Sunday
         # The garbage will be collected on Monday
         task_date = date.fromisocalendar(year, week_no, 7)
-        return (name_list, task_date)
+        return (names, task_date)
     else:
         return (None, None)
 
-def _generator_toilet_cleaning(weekyear:WeekYear) -> ScheduleGenerated:
-    seed = 6
-    # randomness does not really matter here, so anything will do
-    seed = abs(seed + 5)
-    seed = ((seed + 271) ^ (seed << 1))
-    # We need a separate name list here because not every one living in the
-    # house use this toilet
-    names = (
-        # "Waqar", 
-        'Marton',
-        'Dongfang',
-        "Isabelle", 
-        "Sam", 
-        "Evelin", 
-        # "Amina", 
-        "Patti", 
-        )
-    BOUND = len(names)
+# def _generator_toilet_cleaning(weekyear:WeekYear) -> ScheduleGenerated:
+#     seed = 6
+#     # randomness does not really matter here, so anything will do
+#     seed = abs(seed + 5)
+#     seed = ((seed + 271) ^ (seed << 1))
+#     # We need a separate name list here because not every one living in the
+#     # house use this toilet
+#     names = (
+#         # "Waqar", 
+#         'Marton',
+#         'Dongfang',
+#         "Isabelle", 
+#         "Sam", 
+#         "Evelin", 
+#         # "Amina", 
+#         "Patti", 
+#         )
+#     BOUND = len(names)
     
-    week_no, year = weekyear_to_tuple(weekyear)
+#     week_no, year = weekyear_to_tuple(weekyear)
     
-    # A year usually has 52 weeks, ocassionally 53 weeks
-    # The most accurate approach would be to get how many
-    # weeks have past altogether, but add it yourself if
-    # you really want that
-    index = seed + year * 53 + week_no
-    name_list = (names[(index) % BOUND], )
-    return (name_list, None)    
+#     # A year usually has 52 weeks, ocassionally 53 weeks
+#     # The most accurate approach would be to get how many
+#     # weeks have past altogether, but add it yourself if
+#     # you really want that
+#     index = seed + year * 53 + week_no
+#     name_list = (names[(index) % BOUND], )
+#     return (name_list, None)    
 
 schedule = Schedule()
-schedule.add_task("House Vacuuming", None, 2, 4, None)
-schedule.add_task("Kitchen Cleaning", None, 2, 91, None)
-schedule.add_task("Basement Cleaning", None, 1, 5, None)
+schedule.add_task("House Vacuuming", None, 2)
+schedule.add_task("Kitchen Cleaning", None, 2)
+schedule.add_task("Basement Cleaning", None, 1)
 schedule.add_task("Plastic Garbage", _generator_plastic_garbage)
 schedule.add_task("Organic Garbage", _generator_organic_garbage)
 schedule.add_task("Cardboard Garbage", _generator_cardboard_garbage)
-schedule.add_task("Toilet Cleaning", _generator_toilet_cleaning)
+schedule.add_task("Toilet Cleaning", None, 1, None, namelist_toilet)
 
 record = Record(schedule)
+schedule.record = record

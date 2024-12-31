@@ -6,47 +6,59 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     </head>
     <body>
-        <h1>Ip and Domain</h1>
-        <h2>Why using an ip address but not some normal words like goole.com?</h2>
+        <h1 class="left">TLNR: </h1>
+        <h2 class="left">We need either the administrator password or to spend money to access the website without wifi</h2>
+        <h3>Why?</h3>
         <p>
-            Ultimately, we do need ip address, the series of numbers, to access a website.
+            Currently, we can only access the website with 12-digit number while
+            connected to the house wifi, which is not that ideal. Here's why:
         </p>
         <p>
-            We can access google.com with words instead of something like 142.250.179.174
-            because we have DNS, Domain Name System, a bridge between the name and 
-            numbers.
+            To access the server running locally, or any server a
+            web service is running on, we need to know its ip address.
+            The 12-digit number we are using is the IPV4 address.
         </p>
         <p>
-            However, this is a local website, meaning you can only access this website
-            if you are connecting to the house's wifi, so a public DNS server obviously
-            has no access to it and thus cannot help you with it. And even if it can
-            access the local server, someone need to pay for the service, who is
-            definitely not me.
+            Typically, we use domain names like <code>minecraft.net</code> or
+            <code>google.com</code> instead of IP addresses. 
+            This is possible thanks to DNS servers.
+            However, it is not free because there are only limited numbers of
+            nice domains (e.g. apple.com and pear.com are both occupied) and
+            where there resources are limited, there is a price to pay. Also,
+            DNS servers cost money to run and maintain either.
+        </p>
+        <p>
+            Though there is a fix to the "domain vs ip" problem, which I will
+            mention later in the page, there isn't really an easy fix to not
+            being able to access it without connecting to the house wifi. While
+            we do fortunately have both public ipv4 and ipv6 addresses, we also 
+            have a firewall at the router blocking all inbound connections
+            from outside the house.
+        </p>
+        <p>
+            To allow connections to the local server, I need to modify the
+            firewall settings, which requires the administrator password for
+            the router. Since no one knows it, I can't. There are a few ways to
+            work around it but they are either not free or have their own
+            limitations
         </p>
 
-        <h2>What alternatives do we have?</h2>
+        <h3>What alternatives do we have?</h3>
         <p>
-            We do not have a dns server, but we do have a router that can serve
-            similar functionality. 
-            Unfortunately, no one know the administratior password.
-        </p>
-        <p>
-            The most simple method is to let your browser remember the ip so it can
+            If you do not want to remember the 12 numbers, the simplest
+            option is to let your browser remember the ip address so it can
             auto-complete the address for you.
         </p>
         <p>
-            If you are using a laptop or a pc, you can also modify the "hosts" file
-            to set a customed name for the ip address, so you only need to type in the
-            customed name next time you need to access the website
+            You can also modify the "hosts" file to assign a customized name 
+            for the ip address, so you only need to type in the customized name
+            next time you access the website.
         </p>
         <p>
-            Although it is probably possible for me to setup a local dns server, 
-            you would still need to manually config the dns on all your devices since,
-            still, no one can access the router settings. So, i guess it is not worth
-            the trouble.
+            As for accessing the website without connection to the house wifi,
+            maybe you can try something like a vpn or a proxy, but they are
+            probably not free.
         </p>
-
-
         <footer>
         </footer>
     </body>

@@ -20,3 +20,4 @@ def root_redirect():
 # I shouldn't have used run for the final product tho
 # But it is just a small website, so it's probably fine
 app.run("0.0.0.0", 80)
+# app.run("::", 80)

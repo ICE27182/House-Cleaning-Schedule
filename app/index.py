@@ -66,4 +66,3 @@ def route_dont_click():
 def download(filename):
     filepath = os.path.join(index.root_path, "..",filename)
     return send_file(filepath)
-

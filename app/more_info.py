@@ -1,5 +1,6 @@
 
 from .url_prefixes import MORE_INFO_URL_PREFIX
+from .constants import LOOKBACK_WEEKS_FOR_SCHEDULING, NUM_FUTURE_WEEKS_SCHEDULE
 from .type_aliases import TaskName, WeekYear, RecordGet, Name, ScheduleGet
 from .html_utils import HtmlTable, html_a, html_p
 from .type_utils import taskname_to_url_part
@@ -31,7 +32,7 @@ class MoreInfo:
     def html_filename_format(taskname:str) -> str:
         return taskname.lower().replace(' ', '_')
 
-    def html_table(self, record:Record, schedule:Schedule, prior_weeks:int = 3, future_weeks:int = 1) -> str:
+    def html_table(self, record:Record, schedule:Schedule, prior_weeks:int = 4, future_weeks:int = 5) -> str:
         # prior + current + future
         rows = prior_weeks + 1 + future_weeks
         this_week_year = get_today_weekyear()
@@ -76,7 +77,7 @@ def create_route(taskname:TaskName):
         task = MoreInfo(taskname)
         return render_template(
             task.html_path,
-            more_info_table = task.html_table(record, schedule)
+            more_info_table = task.html_table(record, schedule, future_weeks=NUM_FUTURE_WEEKS_SCHEDULE)
         )
     return route
 

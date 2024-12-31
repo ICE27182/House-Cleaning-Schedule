@@ -1,7 +1,7 @@
 
 
 from .type_aliases import WeekYear, WeekNo, Year
-from .type_utils import weekyear_to_tuple, tuple_to_weekyear
+from .type_utils import weekyear_to_tuple, tuple_to_weekyear, weekyear_to_date
 
 from datetime import timedelta, date
 
@@ -24,9 +24,9 @@ def get_today_weekyear() -> WeekYear:
     year, week_no = date.today().isocalendar()[:2]
     return tuple_to_weekyear((week_no, year))
 
-def next_week_weekyear(week_year:WeekYear) -> WeekYear:
+def next_week_weekyear(weekyear:WeekYear) -> WeekYear:
     """Get `WeekYear` one week after the given week"""
-    week_no, year = weekyear_to_tuple(week_year)
+    week_no, year = weekyear_to_tuple(weekyear)
     # Dec 28
     # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
     total_week_num = date(year, 12, 28).isocalendar()[1]
@@ -36,9 +36,9 @@ def next_week_weekyear(week_year:WeekYear) -> WeekYear:
         week_no += 1
     return tuple_to_weekyear((week_no, year))
 
-def last_week_weekyear(week_year:WeekYear) -> WeekYear:
+def last_week_weekyear_DEPRECATED(weekyear:WeekYear) -> WeekYear:
     """Get `WeekYear` one week before the given week"""
-    week_no, year = weekyear_to_tuple(week_year)
+    week_no, year = weekyear_to_tuple(weekyear)
     if week_no - 1 == 0:
         # Dec 28
         # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
@@ -48,14 +48,26 @@ def last_week_weekyear(week_year:WeekYear) -> WeekYear:
         week_no -= 1
     return tuple_to_weekyear((week_no, year))
 
+def last_week_weekyear(weekyear:WeekYear) -> WeekYear:
+    monday = weekyear_to_date(weekyear)
+    last_monday = monday - timedelta(7)
+    year, week_no, _ = last_monday.isocalendar()
+    return tuple_to_weekyear((week_no, year))
+
 def is_present(weekyear:WeekYear) -> bool:
     """Return True if the given `weekyear` is the curent week"""
-    return week_difference(get_today_weekyear(), weekyear) == 0
+    return week_difference(date.today(), weekyear_to_date(weekyear)) == 0
 
 def is_past(weekyear:WeekYear) -> bool:
     """Return True if the given `weekyear` is before the current week"""
-    return week_difference(get_today_weekyear(), weekyear) > 0
+    return week_difference(date.today(), weekyear_to_date(weekyear)) > 0
 
 def is_future(weekyear:WeekYear) -> bool:
     """Return True if the given `weekyear` is after the current week"""
-    return week_difference(get_today_weekyear(), weekyear) < 0
+    return week_difference(date.today(), weekyear_to_date(weekyear)) < 0
+
+def get_weekyear_no(weekyear:WeekYear) -> int:
+    """
+    Get the number of weeks past since date(1/1/1)
+    """
+    return week_difference(weekyear_to_date(weekyear), date(1, 1, 1))

@@ -90,7 +90,7 @@ class Current:
     def next_week(self) -> None:
         """Setter: Set to next week"""
         self.week_no, self.year = weekyear_to_tuple(
-            next_week_weekyear(self.week_no, self.year)
+            next_week_weekyear(tuple_to_weekyear((self.week_no, self.year)))
         )
     
     def current_week_record(self) -> RecordGet:

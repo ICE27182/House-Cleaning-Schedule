@@ -11,26 +11,37 @@
             <th class="left">
                 <a href="/cleaning_schedules/current_week">Current Week</a>
             </th>
-            <th class="right">
-                <a href="/cleaning_schedules/next_week">Next Week</a>
-            </th>
+            {{ next_week | safe}}
         </table>
         <p class="center">
             Click the name and make the text green after you have finished 
             your task this week.
         </p>
+        <p class="center">
+            Click More Info if you need more information 
+            such as future schedules, past records or what to do
+        </p>
         {{ record_table | safe}}
         </table>
         <footer>
-            <p>For those using the toilet downstairs, remember to flush after use!!!</p>
             <p>
-               The schedules vary from what we have for now, except
-                for the Kitchen Cleaning one. It's too much work to 
-                manually add all the schedules and most of them are close
-                to the end, so I generated them procedurally.
+                PEOPLE, REMEMBER TO TAKE THE GARBAGES OUT FROM THE KICTHEN BEFORE THEY OVERFLOW
+            </p>
+            <p> · </p>
+            <p>
+                Now only schedules up to {{ num_future_weeks_schedule }} weeks
+                in advance are visible becuase we are generating new 
+                schedules based on past records. 
             </p>
             <p>
-                <a href="/cleaning_schedules/ip_and_domain">About accessing the website with a series of number</a>
+                If we can see scheudles in the further future, they will have 
+                to change at some point or the record based system does not really mean 
+                anything. Since probably no one would appreciate a constantly
+                changing schedules, I believe having a scheudle system that is
+                fixed at the cost of a shorter notice is the best choice.
+            </p>
+            <p>
+                <a href="/cleaning_schedules/ip_and_domain">About accessing the website</a>
             </p>
             <p>
                 <a href="/dont_click">Try not to click</a>

@@ -2,7 +2,7 @@
 
 from datetime import date
 from os import PathLike # To be imported by other modules
-from typing import Callable
+from typing import Callable, TYPE_CHECKING, Self # `TYPE_CHECKING`, `Self` to be imported by other modules
 
 type Name = str
 type TaskName = str
@@ -19,6 +19,8 @@ type ScheduleGet = dict[TaskName: ScheduleGenerated]
 # mainly associated with database.Record
 type RecordGet = dict[TaskName: tuple[dict[Name:bool], str]]
 type RecordData = dict[WeekYear: RecordGet]
+
+type NameList = dict[Name: float]
 
 # html_utils
 type RowNo = int
