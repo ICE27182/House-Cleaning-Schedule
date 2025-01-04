@@ -1,6 +1,6 @@
 
 
-from .type_aliases import WeekYear, WeekNo, Year
+from .type_aliases import WeekYear
 from .type_utils import weekyear_to_tuple, tuple_to_weekyear, weekyear_to_date
 
 from datetime import timedelta, date
@@ -34,18 +34,6 @@ def next_week_weekyear(weekyear:WeekYear) -> WeekYear:
         week_no, year = 1, year + 1
     else:
         week_no += 1
-    return tuple_to_weekyear((week_no, year))
-
-def last_week_weekyear_DEPRECATED(weekyear:WeekYear) -> WeekYear:
-    """Get `WeekYear` one week before the given week"""
-    week_no, year = weekyear_to_tuple(weekyear)
-    if week_no - 1 == 0:
-        # Dec 28
-        # https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://en.wikipedia.org/wiki/ISO_week_date%23:~:text%3DThe%2520number%2520of%2520weeks%2520in,week%2520of%2520the%2520following%2520year.&ved=2ahUKEwjkx-n6hdeJAxVjgf0HHUUFOcAQFnoECBgQAw&usg=AOvVaw3DA1N2wXenxVazXqbpimaq
-        total_week_num = date(year - 1, 12, 28).isocalendar()[1]
-        week_no, year = total_week_num, year - 1
-    else:
-        week_no -= 1
     return tuple_to_weekyear((week_no, year))
 
 def last_week_weekyear(weekyear:WeekYear) -> WeekYear:

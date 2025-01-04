@@ -1,6 +1,6 @@
 
 
-from .url_prefixes import CLEANING_SCHEDULES_URL_PREFIX
+from .constants import CLEANING_SCHEDULES_URL_PREFIX
 from .date_utils import get_today_weekyear, week_difference
 from .type_utils import weekyear_to_date
 from .database import record
@@ -38,7 +38,7 @@ def route_cleaning_schedules():
     # When entering the main page, the page shows the schedule of the week
     # stored in `current`. `current` will reset every two minutes if no link is
     # clicked.
-    week_year = current.week_year()
+    week_year = current.get_weekyear()
     # Just in case someone navigated to a future week and did not go back
     # to the current week, and another person visit the website before 
     # `current` reset, they can see the week number in red so it is less likely
@@ -46,7 +46,7 @@ def route_cleaning_schedules():
     if get_today_weekyear() != week_year:
         week_year = f"<span class=\"red\">{week_year}</span>"
     
-    if (week_difference(weekyear_to_date(current.week_year()), date.today())
+    if (week_difference(weekyear_to_date(current.get_weekyear()), date.today())
         < 
         NUM_FUTURE_WEEKS_SCHEDULE):
         next_week = """

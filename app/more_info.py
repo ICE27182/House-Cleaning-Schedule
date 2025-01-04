@@ -1,24 +1,28 @@
 
-from .url_prefixes import MORE_INFO_URL_PREFIX
-from .constants import LOOKBACK_WEEKS_FOR_SCHEDULING, NUM_FUTURE_WEEKS_SCHEDULE
-from .type_aliases import TaskName, WeekYear, RecordGet, Name, ScheduleGet
-from .html_utils import HtmlTable, html_a, html_p
+from .constants import NUM_FUTURE_WEEKS_SCHEDULE
+from .type_aliases import TaskName, WeekYear, RecordGet, Name
+from .html_utils import HtmlTable, html_p
 from .type_utils import taskname_to_url_part
 from .date_utils import get_today_weekyear, last_week_weekyear, next_week_weekyear
-from .database import record, schedule, Record, Schedule
+from .database import record, Record
+
 from flask import Blueprint, render_template
 
 more_info = Blueprint("more_info", __name__)
 
-def _week_year_n_week_diff(week_year:WeekYear, n:int) -> WeekYear:
+def _weekyear_diff_n_weeks(weekyear:WeekYear, n:int) -> WeekYear:
+    """
+    Get the `WeekYear` n weeks before or after weekyear
+    """
     if n >= 0:
         for _ in range(n):
-            week_year = next_week_weekyear(week_year)
+            weekyear = next_week_weekyear(weekyear)
     else:
         n = -n
         for _ in range(n):
-            week_year = last_week_weekyear(week_year)
-    return week_year
+            weekyear = last_week_weekyear(weekyear)
+    return weekyear
+
 class MoreInfo:
     def __init__(self, taskname:TaskName, html_path:str=None) -> None:
         self.taskname = taskname
@@ -32,21 +36,21 @@ class MoreInfo:
     def html_filename_format(taskname:str) -> str:
         return taskname.lower().replace(' ', '_')
 
-    def html_table(self, record:Record, schedule:Schedule, prior_weeks:int = 4, future_weeks:int = 5) -> str:
+    def get_html_table(self, record:Record, prior_weeks:int = 4, future_weeks:int = 5) -> str:
         # prior + current + future
         rows = prior_weeks + 1 + future_weeks
-        this_week_year = get_today_weekyear()
+        this_weekyear = get_today_weekyear()
         table = HtmlTable(rows, 2, "center")
         # Prior weeks and current week
         for n in range(-prior_weeks, future_weeks + 1):
-            week_year = _week_year_n_week_diff(this_week_year, n)
-            week:RecordGet = record[week_year]
+            weekyear = _weekyear_diff_n_weeks(this_weekyear, n)
+            week:RecordGet = record[weekyear]
             # Garbages are not weekly, but twice a week or once a month
             if self.taskname not in week:
                 continue
             task:tuple[dict[Name:bool], str] = week[self.taskname]
             # The First column
-            for no, item in enumerate(task[0].items()):
+            for item in task[0].items():
                 name, state = item
                 table[n + prior_weeks, 0] += html_p(
                     name,
@@ -61,6 +65,17 @@ class MoreInfo:
         return str(table)
 
 
+def create_route(taskname:TaskName):
+    def route():
+        task = MoreInfo(taskname)
+        return render_template(
+            task.html_path,
+            more_info_table = task.get_html_table(
+                record, future_weeks=NUM_FUTURE_WEEKS_SCHEDULE
+            )
+        )
+    return route
+
 tasknames = (
     "House Vacuuming",
     "Kitchen Cleaning",
@@ -71,20 +86,9 @@ tasknames = (
     "Toilet Cleaning",
 )
 
-
-def create_route(taskname:TaskName):
-    def route():
-        task = MoreInfo(taskname)
-        return render_template(
-            task.html_path,
-            more_info_table = task.html_table(record, schedule, future_weeks=NUM_FUTURE_WEEKS_SCHEDULE)
-        )
-    return route
-
 for taskname in tasknames:
     more_info.add_url_rule(
         f"/{taskname_to_url_part(taskname)}",
         endpoint = taskname_to_url_part(taskname),
         view_func = create_route(taskname)
     )
-

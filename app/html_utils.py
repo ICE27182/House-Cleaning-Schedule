@@ -66,6 +66,4 @@ class HtmlTable:
             out.append("</tr>")
         out.append("</table>")
         return "".join(out)
-
-
-
+    

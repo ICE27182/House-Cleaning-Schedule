@@ -2,7 +2,7 @@
 
 from datetime import date
 from os import PathLike # To be imported by other modules
-from typing import Callable, TYPE_CHECKING, Self # `TYPE_CHECKING`, `Self` to be imported by other modules
+from typing import Callable, Self # `TYPE_CHECKING`, `Self` to be imported by other modules
 
 type Name = str
 type TaskName = str
@@ -25,4 +25,3 @@ type NameList = dict[Name: float]
 # html_utils
 type RowNo = int
 type ColNo = int
-
