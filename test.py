@@ -69,7 +69,7 @@ if False:
             last_week_weekyear(weekyear)
         )
 
-TO = 32
+TO = 6
 schedules = "\n".join((record.str_weekyear(f"{n} 2025") for n in range(1, TO + 1)))
 print(schedules)
 
