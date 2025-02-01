@@ -67,6 +67,7 @@ all_buttons = {
     "Organic Garbage": (Button("Organic Garbage"),),
     "Cardboard Garbage": (Button("Cardboard Garbage"),),
     "Toilet Cleaning": (Button("Toilet Cleaning"),),
+    "Glass Garbage": (Button("Glass Garbage"),),
 }
 
 

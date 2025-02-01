@@ -32,6 +32,7 @@ class MoreInfo:
             MoreInfo.html_filename_format(taskname) +
             ".html")
         )
+        
     @staticmethod
     def html_filename_format(taskname:str) -> str:
         return taskname.lower().replace(' ', '_')
@@ -84,6 +85,7 @@ tasknames = (
     "Organic Garbage",
     "Cardboard Garbage",
     "Toilet Cleaning",
+    "Glass Garbage",
 )
 
 for taskname in tasknames:

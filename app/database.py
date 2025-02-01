@@ -487,6 +487,28 @@ def _generator_cardboard_garbage(weekyear:WeekYear, booked:set[str] = set()) -> 
     else:
         return (None, None)
 
+def _generator_glass_garbage(weekyear:WeekYear, booked:set[str] = set()) -> ScheduleGenerated:
+    week_no, year = weekyear_to_tuple(weekyear)
+    # Even weeks for glass
+    if week_no % 2 == 0:
+        record_last_weeek = record[last_week_weekyear(weekyear)]
+        if (
+            record_last_weeek == Record.RECORD_NO_FOUND or
+            "Glass Garbage" not in record_last_weeek
+        ):
+            last_week_names = set()
+        else:
+            last_week_names = record_last_weeek["Glass Garbage"][0].keys()
+        names_to_choose_from = _get_names_NAMELIST(last_week_names, booked)
+        names = sample(
+            tuple(names_to_choose_from.keys()), 
+            counts = map(lambda x:int(round(x)), names_to_choose_from.values()),
+            k = 1
+        )
+        return (names, None)
+    else:
+        return (None, None)
+
 
 schedule = Schedule()
 schedule.add_task("House Vacuuming", None, 2)
@@ -496,6 +518,7 @@ schedule.add_task("Plastic Garbage", _generator_plastic_garbage)
 schedule.add_task("Organic Garbage", _generator_organic_garbage)
 schedule.add_task("Cardboard Garbage", _generator_cardboard_garbage)
 schedule.add_task("Toilet Cleaning", None, 1, None, namelist_toilet)
+schedule.add_task("Glass Garbage", _generator_glass_garbage)
 
 record = Record(schedule)
 schedule.record = record
