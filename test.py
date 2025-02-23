@@ -68,19 +68,19 @@ if False:
             last_week_weekyear_DEPRECATED(weekyear) ==
             last_week_weekyear(weekyear)
         )
+if False:
+    TO = 6
+    schedules = "\n".join((record.str_weekyear(f"{n} 2025") for n in range(1, TO + 1)))
+    print(schedules)
 
-TO = 6
-schedules = "\n".join((record.str_weekyear(f"{n} 2025") for n in range(1, TO + 1)))
-print(schedules)
-
-from app.database import namelist_all, updated_namelist
-namelist_all = updated_namelist(namelist_all, record, f"{TO} 2025", 999)
-nl = ["Justin", "Sam", "Davide", "Saša", "Nil", "Hamna", "Hannah", "Isabelle", "Korina", "Evelin", "Adarsh", "Gregor", "Swastika", "Ismail", "Pati", "Jehanzeb", "Dongfang", "Marton"]
-nl_t = {"Marton", "Dongfang", "Isabelle", "Sam", "Evelin", "Pati",}
-for name in sorted(nl):
-    if name in nl_t:
-        print("\033[38;2;196;196;63m", end = '')
-    print(
-        f"{name:16} {schedules.count(name):4} {round(namelist_all[name])}",
-        end='\033[0m\n'
-    )
+    from app.database import namelist_all, updated_namelist
+    namelist_all = updated_namelist(namelist_all, record, f"{TO} 2025", 999)
+    nl = ["Justin", "Sam", "Davide", "Saša", "Nil", "Hamna", "Hannah", "Isabelle", "Korina", "Evelin", "Adarsh", "Gregor", "Swastika", "Ismail", "Pati", "Jehanzeb", "Dongfang", "Marton"]
+    nl_t = {"Marton", "Dongfang", "Isabelle", "Sam", "Evelin", "Pati",}
+    for name in sorted(nl):
+        if name in nl_t:
+            print("\033[38;2;196;196;63m", end = '')
+        print(
+            f"{name:16} {schedules.count(name):4} {round(namelist_all[name])}",
+            end='\033[0m\n'
+        )
