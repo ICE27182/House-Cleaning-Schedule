@@ -17,14 +17,14 @@ class T_OncePerNWeek(unittest.TestCase):
             "Once per 1 week",
         )
         expected_strings_set_P = (
-            r"Once per 2 weeks.                                  OncePerNWeek(self.n=2, self.weekday=0, self.offset=0)",
-            r"Once per 2 weeks on Monday.                        OncePerNWeek(self.n=2, self.weekday=1, self.offset=0)",
-            r"Once per 2 weeks on Monday with offset 1.          OncePerNWeek(self.n=2, self.weekday=1, self.offset=1)",
-            r"Once per 2 weeks with offset 1.                    OncePerNWeek(self.n=2, self.weekday=0, self.offset=1)",
-            r"Once per 2 weeks on Sunday with offset 1.          OncePerNWeek(self.n=2, self.weekday=7, self.offset=1)",
-            r"Once per 2 weeks on Sunday.                        OncePerNWeek(self.n=2, self.weekday=7, self.offset=0)",
-            r"Once per 1 week.                                   OncePerNWeek(self.n=1, self.weekday=0, self.offset=0)",
-            r"Once per 1 week.                                   OncePerNWeek(self.n=1, self.weekday=0, self.offset=0)",
+            r"Once per 2 weeks.                                  OncePerNWeek(self.weekday=0, self.n=2, self.offset=0)",
+            r"Once per 2 weeks on Monday.                        OncePerNWeek(self.weekday=1, self.n=2, self.offset=0)",
+            r"Once per 2 weeks on Monday with offset 1.          OncePerNWeek(self.weekday=1, self.n=2, self.offset=1)",
+            r"Once per 2 weeks with offset 1.                    OncePerNWeek(self.weekday=0, self.n=2, self.offset=1)",
+            r"Once per 2 weeks on Sunday with offset 1.          OncePerNWeek(self.weekday=7, self.n=2, self.offset=1)",
+            r"Once per 2 weeks on Sunday.                        OncePerNWeek(self.weekday=7, self.n=2, self.offset=0)",
+            r"Once per 1 week.                                   OncePerNWeek(self.weekday=0, self.n=1, self.offset=0)",
+            r"Once per 1 week.                                   OncePerNWeek(self.weekday=0, self.n=1, self.offset=0)",
         )
         for string, expected_string in zip(strings_set_P, expected_strings_set_P):
             once_per_week = OncePerNWeek.from_str(string)

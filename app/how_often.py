@@ -35,7 +35,7 @@ class HowOften(ABC):
         self.weekday = weekday or 0
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.n=}, {self.weekday=})"    
+        return f"{self.__class__.__name__}({self.weekday=})"    
 
     @abstractmethod
     def is_this_week(self, weekyear:WeekYear) -> bool:
@@ -154,7 +154,7 @@ class OncePerNWeek(HowOften):
         )
     
     def __repr__(self) -> str:
-        return f"{super().__repr__()[:-1]}, {self.offset=})"
+        return f"{super().__repr__()[:-1]}, {self.n=}, {self.offset=})"
 
     def is_this_week(self, weekyear:WeekYear) -> bool:
         return weekyear.week_count_from_1_1_1() % self.n == self.offset
