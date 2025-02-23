@@ -5,6 +5,7 @@ from .weekyear import WeekYear
 import re
 from abc import ABC, abstractmethod
 from typing import Self, Any
+from collections.abc import Iterable
 
 class HowOften(ABC):
     WEEKDAYS: tuple[str] = (
@@ -17,25 +18,25 @@ class HowOften(ABC):
         "saturday",
         "sunday",
     )
-    def __init__(self, weekday:int|None = None):
+    def __init__(self, weekday:int|str|None = None):
         """
         `weekday` starts from 1, representing Monday
         """
         super().__init__()
-        if weekday is not None and not isinstance(weekday, int):
+        if weekday is not None and not isinstance(weekday, (int, str)):
             raise TypeError(
                 f"`weekday` must be either an integer or None. " 
                 + f"Got {type(weekday)}."
             )
-        elif weekday is not None and weekday not in range(0, 7 + 1):
+        elif isinstance(weekday, int) and weekday not in range(0, 7 + 1):
             raise ValueError(
                 f"`weekday` must be an integer between 0 and 7. "
                 + f"Got {weekday}."
             )
-        self.weekday = weekday or 0
+        self.weekday = HowOften.validate_weekday(weekday) or 0
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.weekday=})"    
+        return f"{self.__class__.__name__}(weekday={self.weekday})"    
 
     @abstractmethod
     def is_this_week(self, weekyear:WeekYear) -> bool:
@@ -52,6 +53,7 @@ class HowOften(ABC):
     def validate_weekday(weekday:Any) -> int:
         """
         Return 0 if weekday evaluates to False, which means it lasts a week.
+        e.g. None, "", False
         Return itself if it is an integer in `range(7 + 1)`
         Return an integer in `range(7 + 1)` if it is valid string 
         representing a day in a week (e.g. monday Friday suNDaY).
@@ -154,12 +156,98 @@ class OncePerNWeek(HowOften):
         )
     
     def __repr__(self) -> str:
-        return f"{super().__repr__()[:-1]}, {self.n=}, {self.offset=})"
+        return f"{super().__repr__()[:-1]}, n={self.n}, offset={self.offset})"
 
     def is_this_week(self, weekyear:WeekYear) -> bool:
         return weekyear.week_count_from_1_1_1() % self.n == self.offset
 
 
+class SpecificWeeks(HowOften):
+    REGEX_weekyear_head = re.compile(r"^\s*Weekyears(?:\s*on\s+(\w+))?\s*:", re.IGNORECASE)
+    REGEX_weekyear_content = re.compile(r"(\d{1,2})\s+(\d{4})")
+    REGEX_week_no_head = re.compile(r"^\s*Weeks(?:\s+on\s+(\w+))?(?:\s+in\s+(\d+))\s*:", re.IGNORECASE)
+    REGEX_week_no_content = re.compile(r"(\d{1,2})")
+
+    def __init__(self, weekday:int, weekyears:Iterable[WeekYear]):
+        super().__init__(weekday)
+        self.weekyears = set(weekyears)
+
+    def __str__(self) -> str:
+        weekday = (
+            f" on {HowOften.WEEKDAYS[self.weekday].capitalize()}" 
+            if self.weekday else ""
+        )
+        return f"Weekyears{weekday}: {self._sorted_weekyears_str()}."
+    
+    def __repr__(self) -> str:
+        return (
+            f"{super().__repr__()[:-1]}, "
+            + f"weekyears={self._sorted_weekyears_repr()})"
+        )
+    
+    def _sorted_weekyears_str(self) -> str:
+        weekyears = sorted(
+            self.weekyears, 
+            key=lambda weekyear : weekyear.week_count_from_1_1_1()
+        )
+        weekyears = map(str, weekyears)
+        return ", ".join(weekyears)
+
+    def _sorted_weekyears_repr(self) -> str:
+        weekyears = sorted(
+            self.weekyears, 
+            key=lambda weekyear : weekyear.week_count_from_1_1_1()
+        )
+        weekyears = map(repr, weekyears)
+        return "{" + ", ".join(weekyears) + "}"
+    
+
+    @classmethod
+    def from_str(cls, description:str) -> Self:
+        """
+        e.g. 
+            "Weekyears on Monday: 32 2025, 24 2025, 43 2025, 45 2025"
+            "weeKyEaRs: 32   2025   24      2025, 43   2025  45    2025,  "
+            "Weeks on Saturday in 2025: 32     24    43   , 45"
+
+        Noted that invalid weekyears will be discarded and no exception will
+        raise. e.g.
+            "3 2 2 0 2 5" in "Weekyears on Monday: 3 2 2 0 2 5, 24 2025, 
+            43 2025, 45 2025"
+            or "32, 2025" in "Weekyears on Monday: 32, 2025, 24 2025, 
+            43 2025, 45 2025"
+
+        """
+        if not isinstance(description, str):
+            raise TypeError(
+                f"`description` must be a str. Got {type(description)}."
+            )
+        if cls.REGEX_weekyear_head.match(description):
+            weekday:str = cls.REGEX_weekyear_head.findall(description)[0]
+            weekyears = cls.REGEX_weekyear_content.findall(description)
+            weekyears = tuple(
+                WeekYear(int(weekyear[0]), int(weekyear[1]))
+                for weekyear in weekyears
+            )
+            return cls(weekday, weekyears)
+        elif (matched := cls.REGEX_week_no_head.match(description)):
+            weekday:str = matched[1]
+            year = int(matched[2])
+            weeks = cls.REGEX_week_no_content.findall(
+                description[matched.end():]
+            )
+            weekyears = tuple(WeekYear(int(week), year) for week in weeks)
+            return cls(weekday, weekyears)
+        else:
+            raise ValueError(
+                "`description` cannot be recognized. "
+                + f"Got {repr(description)}."
+            )
+        
+
+    def is_this_week(self, weekyear:WeekYear) -> bool:
+        return weekyear in self.weekyears
+    
 
 class NthWeekPerMonth(HowOften):
     ORDINALS:tuple[str] = (

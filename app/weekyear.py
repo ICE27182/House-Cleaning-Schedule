@@ -39,6 +39,9 @@ class WeekYear(Sequence):
     def __str__(self) -> str:
         return f"{self.week} {self.year}"
     
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(week={self.week}, year={self.year})"
+    
     def __iter__(self):
         return iter(tuple(self.week, self.year))
 
@@ -49,6 +52,12 @@ class WeekYear(Sequence):
     
     def __len__(self) -> int:
         return 2
+    
+    def __eq__(self, other:Self) -> Self:
+        return self.week == other.week and self.year == other.year
+    
+    def __hash__(self):
+        return hash((self.week, self.year))
     
     def __sub__(self, subtractor:Self|int|date) -> int|Self:
         if isinstance(subtractor, date):
