@@ -33,15 +33,15 @@ class T_OncePerNWeek(unittest.TestCase):
             # green(f'r"{str(once_per_week):50} {repr(once_per_week)}",')
             self.assertEqual(
                 f"{str(once_per_week):50} {repr(once_per_week)}",
-                expected_string
+                expected_string,
             )
             self.assertEqual(
                 str(OncePerNWeek.from_str(str(once_per_week))), 
-                str(once_per_week)
+                str(once_per_week),
             )
             self.assertEqual(
                 str(eval(repr(once_per_week))), 
-                str(once_per_week)
+                str(once_per_week),
             )
 
     def test_parsing_F(self):
@@ -155,15 +155,15 @@ class T_SpecificWeeks(unittest.TestCase):
             # green(f'r"{str(specific_weeks):60} {repr(specific_weeks)}",')
             self.assertEqual(
                 f"{str(specific_weeks):60} {repr(specific_weeks)}",
-                expected_string
+                expected_string,
             )
             self.assertEqual(
                 str(SpecificWeeks.from_str(str(specific_weeks))), 
-                str(specific_weeks)
+                str(specific_weeks),
             )
             self.assertEqual(
                 str(eval(repr(specific_weeks))), 
-                str(specific_weeks)
+                str(specific_weeks),
             )
 
     def test_parsing_F(self):

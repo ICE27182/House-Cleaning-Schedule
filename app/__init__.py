@@ -2,6 +2,7 @@
 
 from .weekyear import WeekYear
 from .how_often import HowOften, OncePerNWeek, SpecificWeeks
+from .chore import Chore
 
 # from .constants import MORE_INFO_URL_PREFIX
 # from .constants import  CLEANING_SCHEDULES_URL_PREFIX
