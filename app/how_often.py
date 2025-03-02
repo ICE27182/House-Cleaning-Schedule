@@ -81,7 +81,9 @@ class HowOften(ABC):
                 )
         else:
             raise TypeError(f"Unsupported Type. Got {type(weekday)}.")
-        
+
+    def which_day(self) -> str:
+        return HowOften[self.weekday] if self.weekday != 0 else "Whole week"
 
 class OncePerNWeek(HowOften):
     REGEX = re.compile(r"^\s*once\s+per\s+(\d+)\s+weeks?(?:\s+on\s+(\w*))?(?:\s+with\s+offset\s+(\d+))?\s*\.?\s*$", re.IGNORECASE)
