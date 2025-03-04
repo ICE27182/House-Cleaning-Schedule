@@ -30,6 +30,18 @@ class WeekYear(Sequence):
         return cls(date_obejct.isocalendar().week, date_obejct.isocalendar().year)
     
     @classmethod
+    def from_str(cls, string:str) -> Self:
+        if not isinstance(string, str):
+            raise TypeError(
+                "`date_object` must be of type `str`. "
+                + f"Got {type(string)}"
+            )
+        weekyear = string.split(" ")
+        if len(weekyear) != 2:
+            raise ValueError(f"Unsupported format. Got {string}")
+        return cls(int(weekyear[0]), int(weekyear[1]))
+    
+    @classmethod
     def present_weekyear(cls) -> Self:
         return cls.from_date(date.today())
     
@@ -54,10 +66,23 @@ class WeekYear(Sequence):
         return 2
     
     def __eq__(self, other:Self) -> Self:
+        if not isinstance(other, WeekYear):
+            raise TypeError(
+                "Comparison not supported between instances of "
+                f"{type(self)} and {type(other)}."
+            )
         return self.week == other.week and self.year == other.year
     
     def __hash__(self):
         return hash((self.week, self.year))
+    
+    def __lt__(self, other:Self) -> Self:
+        if not isinstance(other, WeekYear):
+            raise TypeError(
+                "Comparison not supported between instances of "
+                f"{type(self)} and {type(other)}."
+            )
+        return other - self > 0
     
     def __sub__(self, subtractor:Self|int|date) -> int|Self:
         if isinstance(subtractor, date):
@@ -118,70 +143,3 @@ class WeekYear(Sequence):
                 )
         # 12/28 is guaranteed to be in the last week of the given year
         return december28th.isocalendar().week
-
-
-
-if __name__ == "__main__":
-    # Check the first week of a month
-    if False:
-        for year in range(1, 2024):
-            for month in range(1, 12 + 1):
-                date7 = date(year, month, 7)
-                assert(date.fromisocalendar(year, date7.isocalendar().week, 7).month)
-        year = 2024
-        for month in range(1, 12 + 1):
-                date7 = date(year, month, 7)
-                print(date.fromisocalendar(year, date7.isocalendar().week, 7).isocalendar())
-    # Check the number of week in a month
-    if False:
-        for year in range(1, 2025 + 1):
-            for month in range(1, 12):
-                diff = WeekYear.from_date(date(year, month + 1, 7)) - date(year, month, 7)
-                if diff != 4:
-                    print(f"{year:4} - {month:2}: {diff}")
-        year = 2024              
-        for month in range(1, 12 + 1):      
-            print(
-                month, 
-                date(
-                    year if month != 12 else year + 1, 
-                    month + 1 if month != 12 else 1, 
-                    7
-                ) 
-                - WeekYear.from_date(date(year, month, 7))
-            )
-    if False:
-        expected = (" 1 5"
-                    " 2 4"
-                    " 3 4"
-                    " 4 5"
-                    " 5 4"
-                    " 6 4"
-                    " 7 5"
-                    " 8 4"
-                    " 9 5"
-                    "10 4"
-                    "11 4"
-                    "12 5"
-        )
-        actual = ""
-        year = 2024              
-        for month in range(1, 12 + 1):      
-            actual += (
-                f"{month:2} " 
-                + str(
-                    date(
-                        year if month != 12 else year + 1, 
-                        month + 1 if month != 12 else 1, 
-                        7
-                    ) 
-                    - WeekYear.from_date(date(year, month, 7))
-                )
-            )
-        assert(actual == expected)
-
-        assert(date.today() - WeekYear.present_weekyear() == 0)
-        assert(WeekYear.present_weekyear() - 55 - WeekYear.from_date(date.today()) == -55)
-
-        print("\033[92mAll Assertions past\033[0m")
-    

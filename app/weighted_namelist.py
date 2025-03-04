@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from typing import Self
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from random import uniform, shuffle
 
@@ -23,7 +23,7 @@ class WeightedPerson:
                 if person.name != self.name
             )
         return (
-            f"{self.name} ({self.weight})"
+            f"{self.name} ({self.weight:.3f})"
             + (
                 f" in group with {group}" if group else ""
             )
@@ -36,7 +36,7 @@ class WeightedPerson:
         )
 
 @dataclass
-class WeightedNameList(Iterable):
+class WeightedNameList(Sequence):
     namelist:dict[WeightedPerson]
     DISCARD = 0
 
@@ -65,6 +65,9 @@ class WeightedNameList(Iterable):
     
     def __getitem__(self, name:str) -> WeightedPerson:
         return self.namelist[name]
+    
+    def __contains__(self, value) -> bool:
+        return value in self.namelist
 
     @classmethod
     def from_namelist(cls, namelist: Namelist, default_weight = 16) -> Self:
