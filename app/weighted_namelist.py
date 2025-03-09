@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Self
 from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
-from random import uniform, shuffle
+from random import uniform, shuffle, choice
 
 type Namelist = Iterable[str|Iterable[str]]
 
@@ -37,7 +37,7 @@ class WeightedPerson:
 
 @dataclass
 class WeightedNameList(Sequence):
-    namelist:dict[WeightedPerson]
+    namelist:dict[str, WeightedPerson]
     DISCARD = 0
 
     def __len__(self) -> int:
@@ -92,20 +92,57 @@ class WeightedNameList(Sequence):
                 out.update(tmp.namelist)
         return WeightedNameList(out)
             
-    def pick(self, k:int) -> list[str]:
+    def __pick(self, k:int) -> set[str]:
         """
-        Return a list of randomly picked names.
+        Return a set of randomly picked names.
+
         It will try to make sure people in the same group are more likely
         to be picked together. However, this also means if someone in a group
         has a high weight, other people from the same group are also more 
         likely to be picked.
+
+        **FIXME:**
+        
+            It may leads to an infinite loop if for example, we need to 
+            generate 2 names out of this namelist [[m, n], o].
+
+            Suppose we first pick o. Then it will only have [m, n] to pick
+            from; however, they are not valid because of the group size is
+            larger than the space left in `result`.
+
+            NOTE
+                -- edited 
+                This bug can also be triggered if the sum of weights of people
+                who are not in a group can never exceed the threshold, while
+                people in the group have weights such that that can exceed it
+                e.g. [[(m, 5), (n, 0)], p: 0, q: 0] k = 2, result = {p}
+            This bug may only be triggered if we have too few people as shown
+            in the example above.
+        
         """
+        if k > len(self):
+            raise ValueError("Too many people to pick.")
         population:tuple[str] = tuple(p.name for p in self)
         weights:list[float] = list(p.weight for p in self)
         order = list(range(len(self)))
         pick_from_group = False
-        result = []
-        while len(result) < k:
+        # Set is necessary. For example:
+        #   Given this namelist: [[m, n], o], {m:DISCARD, n:16, o:16}
+        #   and we need to pick 2 persons
+        #
+        #   Suppose we first pick n, then we will pick from [m, n].
+        #   However, since we have already picked n, the weights for both m
+        #   and n will be DISCARD, which means it is possible to have two n
+        #   picked in the result if we use a list.
+        #
+        #   Thanks to the while loop right below and the fact that result is
+        #   a set, even though n is picked again, it doesn't count, and the
+        #   method will keep looping until m is picked.
+        result = set()
+        MAXIUM_LOOPS = 10_000
+        loop_counter = 0
+        while len(result) < k and loop_counter < MAXIUM_LOOPS:
+            loop_counter += 1
             # Without this shuffle, if all weights are 0, then the first
             # person in the dictionary will always be picked.
             shuffle(order)
@@ -125,7 +162,7 @@ class WeightedNameList(Sequence):
                     ):
                         # The picked person is in a group with invalid size
                         break
-                    result.append(population[i])
+                    result |= {population[i]}
                     weights[i] = WeightedNameList.DISCARD
 
                     # Change the population of next person to pick if needed
@@ -154,5 +191,51 @@ class WeightedNameList(Sequence):
                         ]
                         order = list(range(len(self)))
                     break
+        if loop_counter >= MAXIUM_LOOPS:
+            while len(result) < k:
+                result |= {choice(self.namelist.keys())}
         return result
- 
+    
+    def pick(self, k:int) -> set[str]:
+        if k > len(self):
+            raise ValueError("Too many people to pick.")
+        elif not all(len(weighted_person.group) == 1 
+                     for weighted_person in self):
+            raise ValueError(
+                "Groups are not supported by this pick method."
+                + f"Got {self}."
+            )
+        result = set()
+        population:tuple[str] = tuple(p.name for p in self)
+        weights:list[float] = list(p.weight for p in self)
+        # Without this shuffle, if all weights are 0, then the first
+        # person in the dictionary will always be picked.
+        order = list(range(len(self)))
+        # Here I used a while loop instead of a for loop because it is
+        # possible that the same name is picked in two iterations if all
+        # the weights are 0.
+        # It will not lead to an infinite loop because k is guaranteed to be
+        # smaller than or equal to the total number of names.
+        while len(result) < k:
+            shuffle(order)
+            total_weight = sum(weights)
+            threshold = uniform(0, total_weight)
+            cumulative = 0
+            for i in order:
+                cumulative += weights[i]
+                if cumulative >= threshold:
+                    result |= {population[i]}
+                    weights[i] = WeightedNameList.DISCARD
+                    break
+        return result
+    
+    def exclude(self, namelist:Iterable[str]) -> Self:
+        """
+        Set all weights of all names in the namelist to 
+        `WeightedNameList.DISCARD`.
+        Return self to allow chaining.
+        """
+        for name in namelist:
+            if name in self:
+                self[name].weight = WeightedNameList.DISCARD
+        return self

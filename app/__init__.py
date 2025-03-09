@@ -4,6 +4,7 @@ from .weekyear import WeekYear
 from .weighted_namelist import WeightedNameList
 from .how_often import HowOften, OncePerNWeek, SpecificWeeks
 from .chore import Chore
+from .record import Record
 
 # from .constants import MORE_INFO_URL_PREFIX
 # from .constants import  CLEANING_SCHEDULES_URL_PREFIX

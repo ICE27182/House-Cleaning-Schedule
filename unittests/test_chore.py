@@ -54,7 +54,7 @@ CHORES = [
                 "name": "Glass Garbage",
                 "namelist": NAMELIST,
                 "num_of_people": 1,
-                "how_often": "Once per week",
+                "how_often":  "Once per 2 week with offset 1",
             },
             {
                 "name": "Carboard Garbage",
