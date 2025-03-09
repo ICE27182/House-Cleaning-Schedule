@@ -528,25 +528,35 @@ class T_Record_Random(TestCase):
                 end=""
             )
             print((len(T_Record_Random.flatten(namelist)) + 3 * len(chores))*"\033[F", end="")
-            sleep(0.02)
+            sleep(0.12)
         print("\n"*((len(T_Record_Random.flatten(namelist)) + 3 * len(chores))))
-        print(record.weighted_namelist(namelist, weekyear-record.gen_range.stop))
+        for i, chore in enumerate(chores):
+            if i&1:
+                print("\033[0m")
+            else:
+                print("\033[34m")
+
+            print(chore)
+            print(record.weighted_namelist(
+                chore=chore, 
+                this_weekyear=weekyear-record.gen_range.stop,
+            ))
         if show_record:
             print(record)
 
     @skip("No assertions inside")
     def test_everyone_follows(self):
         T_Record_Random.visualize(1)
-    # @skip("No assertions inside")
+    @skip("No assertions inside")
     def test_everyone_95p_follows(self):
-        T_Record_Random.visualize(0.95, gen_only=False, show_record=True)
+        T_Record_Random.visualize(0.95, gen_only=True)
 
     @skip("No assertions inside")
     def test_everyone_follows_except_sam(self):
         T_Record_Random.visualize(1, {"Sam":0.6}, )
     @skip("No assertions inside")
     def test_everyone_95p_except_sam(self):
-        T_Record_Random.visualize(0.95, {"Sam":0.6}, False, True)
+        T_Record_Random.visualize(0.95, {"Sam":0.6}, False, )
     
 
 

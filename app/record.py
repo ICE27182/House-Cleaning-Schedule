@@ -151,7 +151,9 @@ class Record(Sequence):
         Construct a `Record` object from the json file at `path`.
         """
         with open(path, "r") as json_file:
-            return Record.load_from_json_format(json_file.read())
+            return Record.load_from_json_format(
+                json.load(json_file)
+            )
     
     @classmethod
     def _load_old_record(cls, 
@@ -256,8 +258,8 @@ class Record(Sequence):
                 else:
                     last_week_names = set()
                 weighted_namelist = self.weighted_namelist(
-                    chore.namelist,
-                    this_weekyear
+                    chore=chore,
+                    this_weekyear=this_weekyear,
                 ).exclude(excluded | last_week_names)
                 out[chore.name] = Record.RecordEntry.generate(
                     weighted_namelist,
@@ -285,7 +287,7 @@ class Record(Sequence):
 
     def weighted_namelist(
             self, 
-            namelist: Namelist, 
+            chore: Chore,
             this_weekyear: WeekYear|None = None,
             default_weight: float = 16,
     ) -> WeightedNameList:
@@ -295,7 +297,7 @@ class Record(Sequence):
         """
         if this_weekyear is None:
             this_weekyear = WeekYear.present_weekyear()
-        weighted_namelist = WeightedNameList.from_namelist(namelist, 
+        weighted_namelist = WeightedNameList.from_namelist(chore.namelist, 
                                                            default_weight)
         for offset in self.gen_range:
             weekyear = this_weekyear + offset
@@ -306,13 +308,17 @@ class Record(Sequence):
                 RecordTime.PRESENT if weekyear == this_weekyear else
                 RecordTime.FUTURE 
             )
-            for record_entry in self.data[weekyear].values():
+            if chore.name in self.data[weekyear]:
+            # for record_entry in self.data[weekyear].values():
+                # for name, has_done in record_entry.people.items():
+                record_entry = self.data[weekyear][chore.name]
                 for name, has_done in record_entry.people.items():
                     if name in weighted_namelist:
                         new_weight = Record._adjust_weight(
                             weighted_namelist[name].weight, 
                             has_done,
-                            record_time
+                            record_time,
+                            chore.num_of_people,
                         )
                         weighted_namelist[name].weight = new_weight
         return weighted_namelist
@@ -320,19 +326,20 @@ class Record(Sequence):
     @staticmethod
     def _adjust_weight(weight: float, 
                        has_done: bool, 
-                       record_time: RecordTime) -> float:
+                       record_time: RecordTime,
+                       num_of_people: int) -> float:
         if record_time == RecordTime.PRESENT:
             record_time = RecordTime.FUTURE
 
         if record_time == RecordTime.HISTORY:
             if has_done:
-                weight -= 0.6 * 3
+                weight -= 0.6 * num_of_people * 16
             else:
-                weight += 1.5 * 3
+                weight += 1.5 * num_of_people * 16
         elif record_time == RecordTime.PRESENT:
             pass
         elif record_time == RecordTime.FUTURE:
-            weight -= 0.3 * 3
+            weight -= 0.3 * num_of_people * 16
         else:
             raise ValueError(f"Not supported record time. Got {record_time}.")
         return max(WeightedNameList.DISCARD, weight)
