@@ -528,7 +528,7 @@ class T_Record_Random(TestCase):
                 end=""
             )
             print((len(T_Record_Random.flatten(namelist)) + 3 * len(chores))*"\033[F", end="")
-            sleep(0.12)
+            sleep(0.02)
         print("\n"*((len(T_Record_Random.flatten(namelist)) + 3 * len(chores))))
         print(record.weighted_namelist(namelist, weekyear-record.gen_range.stop))
         if show_record:
@@ -537,7 +537,7 @@ class T_Record_Random(TestCase):
     @skip("No assertions inside")
     def test_everyone_follows(self):
         T_Record_Random.visualize(1)
-    @skip("No assertions inside")
+    # @skip("No assertions inside")
     def test_everyone_95p_follows(self):
         T_Record_Random.visualize(0.95, gen_only=False, show_record=True)
 
