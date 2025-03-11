@@ -117,7 +117,20 @@ class Chore:
             "num_of_people": self.num_of_people,
             "how_often": str(self.how_often),
         }
-    
-
         
-
+    @staticmethod
+    def urlized_chore_name(line:str) -> str:
+        return "-".join(line.lower().split())
+    
+    @staticmethod
+    def de_urlize_chore_name(urlized:str) -> str:
+        return " ".join(map(lambda word: word.capitalize(), urlized.split("-")))
+        
+    def match_urlized_chore_name(self, urlized:str) -> bool:
+        return self.urlized_chore_name() == urlized
+    
+    def loosely_match_chore_name(self, other:str) -> bool:
+        return (
+            self.name.lower().replace(" ", "").replace("-", "")
+            == other.lower().replace(" ", "").replace("-", "")
+        )

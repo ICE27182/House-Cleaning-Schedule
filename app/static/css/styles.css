@@ -1,4 +1,4 @@
-
+/* Global */
 h1 {
     text-align: center;
     color: #e0e0ff;
@@ -11,6 +11,36 @@ body {
     color: #e0e0ff;
     font-family: monospace;
 }
+
+/* Main page */
+
+    /* Buttons for changeing time */
+    .last_week_button {
+        text-align: left;
+    }
+
+    .current_week_button {
+        text-align: left;
+        /* padding-left: 5%; */
+    }
+
+    .next_week_button {
+        text-align: right;
+        /* padding-right: 5%; */
+    }
+
+    /* Table */
+    table.main {
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        width: 80%;
+    }
+
+    /* More Info Buttons */
+    a.more_info {
+        color: #9cdcff;
+    }
 
 table {
     text-align: center;  

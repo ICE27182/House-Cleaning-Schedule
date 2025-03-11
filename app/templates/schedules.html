@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    </head>
+    
+    <body>
+        {{ week_year | safe }}
+
+        <table class="left_right">
+            <th>
+                {{ last_week_button | safe }}
+            </th>
+            <th>
+                {{ current_week_button | safe }}
+            </th>
+            <th>
+                {{ next_week_button | safe}}
+            </th>
+        </table>
+
+        <p class="center">
+            Click the name and make the text green after you have finished 
+            your task this week.
+        </p>
+        <p class="center">
+            Click More Info if you need more information 
+            such as future schedules, past records or what to do
+        </p>
+        {{ main_table | safe }}
+        
+        <a href="/schedules/download/everything" download>Download everything</a>
+        <a href="/schedules/download/record.json" download>Download raw record</a>
+        
+
+        <footer>
+            <p>
+                Please let Sam know if you will not be at the house 6 weeks in advance,
+                or find someone willing to take your place for the chores already assigned
+            </p>
+            <p>
+                <a href="{{ url_for('static', filename='images/Random Logic.jpeg') }}" download>
+                    How the schedules are generated (Please read the code for a more accurate understanding)
+                </a>
+            </p>
+            <p>
+                <a href="/cleaning_schedules/ip_and_domain">How to access this website without connecting to the wifi?</a>
+            </p>
+            <p>
+                <a href="/dont_click">Try not to click</a>
+            </p>
+            
+        </footer>
+    </body>
+</html>
