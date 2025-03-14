@@ -1,5 +1,6 @@
 
 from datetime import date, timedelta
+from calendar import month_name
 from collections.abc import Sequence
 from typing import Self
 
@@ -143,3 +144,10 @@ class WeekYear(Sequence):
                 )
         # 12/28 is guaranteed to be in the last week of the given year
         return december28th.isocalendar().week
+    
+    def get_range_in_dates(self) -> str:
+        datef = "%B %-d, %Y"
+        monday = date.fromisocalendar(self.year, self.week, 1).strftime(datef)
+        sunday = date.fromisocalendar(self.year, self.week, 7).strftime(datef)
+        return f"{monday} - {sunday}"
+    

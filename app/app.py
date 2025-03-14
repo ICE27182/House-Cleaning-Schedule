@@ -75,9 +75,10 @@ class App:
     def get_weekyear_title(self, weekyear: WeekYear) -> str:
         week, year = weekyear.week, weekyear.year
         if weekyear == self.get_weekyear():
-            return f"<h1>Week {week} in {year}</h1>"
+            title = f"<h1>Week {week} in {year}</h1>"
         else:
-            return f'<h1 class="red">Week {week} in {year}</h1>'
+            title = f'<h1 class="red">Week {week} in {year}</h1>'
+        return title + f"<h3>{weekyear.get_range_in_dates()}</h3>"
 
     def get_link_to_this_weekyear(self) -> str:
         weekyear = self.get_weekyear()
