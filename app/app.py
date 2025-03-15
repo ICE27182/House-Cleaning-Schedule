@@ -7,8 +7,8 @@ from .record import Record
 from dataclasses import dataclass
 from collections.abc import Iterable
 from os import PathLike, getcwd
-from os.path import dirname
-from shutil import make_archive
+from os.path import dirname, exists
+from shutil import make_archive, copy
 
 @dataclass
 class App:
@@ -89,6 +89,40 @@ class App:
         parent_dir = dirname(current_dir)
         return make_archive(f"{parent_dir}/archive", "zip", current_dir)
 
+    def ensure_more_info_html_exists(self, urlized_chore_name) -> None:
+        if not exists(f"app/templates/more_info/{urlized_chore_name}.html"):
+            print(
+                "A new template is generated at: "
+                + copy(
+                    f"app/templates/more_info/.template.html",
+                    f"app/templates/more_info/{urlized_chore_name}.html"
+                )
+            )
+
+    def get_more_info_table(self, chore_name:str) -> str:
+        str_buff = ["<table>\n"]
+        for offset in self.record.gen_range:
+            weekyear = app.get_weekyear() + offset
+            if (weekyear in self.record
+                and chore_name in self.record[weekyear]):
+                str_buff.append(
+                    "\t<tr>\n\t\t<td>" if weekyear != app.get_weekyear()
+                    else '\t<tr class="more_info_current_week">\n\t\t<td>'
+                )
+                people = self.record[weekyear][chore_name].people
+                for person, status in people.items():
+                    color_class = "green" if status else "red"
+                    str_buff.append(
+                        f'<p class="{color_class}">{person}</p>'
+                    )
+                str_buff.append(
+                    "</td>\n"
+                    f"\t\t<td>{weekyear.get_range_in_dates()}</td>\n"
+                    "\t</tr>\n"
+                    )
+        str_buff.append("</table>\n")
+        return "".join(str_buff)
+            
     def _valid_for_record_generation(self, weekyear:WeekYear) -> str:
         return 0 <= weekyear-self.get_weekyear() < self.record.gen_range.stop
     

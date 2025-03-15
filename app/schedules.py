@@ -47,9 +47,17 @@ def route_update_record(which: str):
 
 
 
-@schedules.route("/schedules/more-info/<chore>", methods=["GET", "POST"])
-def route_more_info(chore: str):
-    raise NotImplementedError
+@schedules.route("/schedules/more-info/<urlized_chore_name>", 
+                 methods=["GET", "POST"])
+def route_more_info(urlized_chore_name: str):
+    app.ensure_more_info_html_exists(urlized_chore_name)
+    chore_name = Chore.de_urlize_chore_name(urlized_chore_name)
+    app.get_more_info_table(chore_name)
+    return render_template(
+        f"more_info/{urlized_chore_name}.html",
+        task_name=chore_name,
+        more_info_table=app.get_more_info_table(chore_name),
+    )
 
 @schedules.route("/schedules/download/everything", methods=["GET"])
 def route_download_everything():

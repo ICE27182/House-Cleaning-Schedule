@@ -43,10 +43,35 @@ body {
         width: 80%;
     }
 
-    /* More Info Buttons */
-    a.more_info {
-        color: #9cdcff;
+
+
+/* More Info */
+    tr.more_info_current_week {
+        background: #1b2f48;
+        font-weight: bold;
     }
+    th.more_info {
+        width: 50%;
+    }
+
+
+
+/* Used for buttons */
+.red {
+    color: #ff0000;
+}
+.green {
+    color: #00ff00;
+}
+.blue {
+    color: #0000ff;
+}
+.ice {
+    color: #9cdcff;
+}
+
+
+
 
 table {
     text-align: center;  
@@ -75,12 +100,17 @@ table.left_right {
 }
 
 
-th.more_info {
-    width: 50%;
-}
+
 img.more_info {
     width: 100%;
 }
+
+/* More Info Buttons */
+/* 
+a.more_info {
+    color: #9cdcff;
+} 
+*/
 
 a {
     color: #9cdcff;
@@ -91,26 +121,9 @@ p.center {
     text-align: center;
 }
 
-p.more_info_current_week {
-    background: #1b2f48;
-    font-weight: bold;
-}
+
 
 footer {
     text-align: center;
     color:yellow
-}
-
-/* Used for buttons */
-.red {
-    color: #ff0000;
-}
-.green {
-    color: #00ff00;
-}
-.blue {
-    color: #0000ff;
-}
-.ice {
-    color: #9cdcff;
 }

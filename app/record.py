@@ -249,7 +249,7 @@ class Record(Sequence):
         for i in chore_order:
             chore = chores[i]
             if chore.how_often.is_this_week(weekyear):
-                last_weekyear = this_weekyear - 1
+                last_weekyear = weekyear - 1
                 if (last_weekyear in self 
                     and chore.name in self.data[last_weekyear]):
                     last_week_names = (
@@ -333,13 +333,13 @@ class Record(Sequence):
 
         if record_time == RecordTime.HISTORY:
             if has_done:
-                weight -= 0.6 * num_of_people * 16
+                weight -= 0.6 * num_of_people**0.5 * 9
             else:
-                weight += 1.5 * num_of_people * 16
+                weight += 1.5 * num_of_people**0.5 * 9
         elif record_time == RecordTime.PRESENT:
             pass
         elif record_time == RecordTime.FUTURE:
-            weight -= 0.3 * num_of_people * 16
+            weight -= 0.3 * num_of_people**0.5 * 9
         else:
             raise ValueError(f"Not supported record time. Got {record_time}.")
         return max(WeightedNameList.DISCARD, weight)

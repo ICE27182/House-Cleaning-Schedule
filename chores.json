@@ -24,7 +24,7 @@
         "how_often": "Once per 2 week with offset 1"
     },
     {
-        "name": "Carboard Garbage",
+        "name": "Cardboard Garbage",
         "namelist": "namelist.json",
         "num_of_people": 1,
         "how_often": "Weeks on Sunday in 2025: 2 6 10 14 19 24 28 32 36 41 45 49"
@@ -42,19 +42,19 @@
         "how_often": "Once per 2 weeks on Sunday with offset 1"
     },
     {
-        "name": "Toilet&Bathroom Cleaning North",
+        "name": "Toilet & Bathroom Cleaning North",
         "namelist": "namelist_north.json",
         "num_of_people": 1,
         "how_often": "Once per week"
     },
     {
-        "name": "Toilet&Bathroom Cleaning South",
+        "name": "Toilet & Bathroom Cleaning South",
         "namelist": "namelist_south.json",
         "num_of_people": 1,
         "how_often": "Once per week"
     },
     {
-        "name": "Toilet&Bathroom Cleaning Second Floor",
+        "name": "Toilet & Bathroom Cleaning Second Floor",
         "namelist": "namelist_second_floor.json",
         "num_of_people": 1,
         "how_often": "Once per week"

@@ -146,7 +146,7 @@ class WeekYear(Sequence):
         return december28th.isocalendar().week
     
     def get_range_in_dates(self) -> str:
-        datef = "%B %-d, %Y"
+        datef = "%b %-d, %Y"
         monday = date.fromisocalendar(self.year, self.week, 1).strftime(datef)
         sunday = date.fromisocalendar(self.year, self.week, 7).strftime(datef)
         return f"{monday} - {sunday}"

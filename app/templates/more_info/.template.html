@@ -6,18 +6,19 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     </head>
     <body>
-        <h1>Toilet Cleaning</h1>
-        <a class="left" href="/cleaning_schedules">Back</a>
+        <h1>{{ task_name }}</h1>
+        <a class="left" href="/">Back</a>
         <table class="center">
             <th class="more_info">
                 {{more_info_table | safe}}
             </th>
             <th>
-                <p>Only applicable to those who use this toilet and bathroom</p>
-                <img class="more_info" src="{{ url_for('static', filename='images/toilet_cleaning.jpeg') }}" alt="toilet_cleaning.jpeg">
-                <p>Clean both the toilet and the bathroom</p>
+                <!-- 
+                <a href="{{ url_for('static', filename='images/house_plan.png') }}" download>
+                    <img class="more_info" src="{{ url_for('static', filename='images/house_plan.png') }}" alt="house_plan.png">
+                </a> 
+                -->
             </th>
-            </th class="more_info">
         </table>
     </body>
 </html>
