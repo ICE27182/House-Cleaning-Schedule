@@ -2,6 +2,8 @@
 
 from app import create_website, app, WeekYear, Record
 # app._weekyear = WeekYear(16, 2025)
+app.compress_everything()
+
 website = create_website()
 
 app.record.add_new_chores(

@@ -31,27 +31,33 @@
         </p>
         {{ main_table | safe }}
         
-        <a href="/schedules/download/everything" download>Download everything</a>
-        <a href="/schedules/download/record.json" download>Download raw record</a>
-        
-
         <footer>
             <p>
-                Please let Sam know if you will not be at the house 6 weeks in advance,
-                or find someone willing to take your place for the chores already assigned
+                Please let Sam know before the schedule is generated 
+                if you will no be around the house in the coming weeks.
             </p>
             <p>
-                <a href="{{ url_for('static', filename='images/Random Logic.jpeg') }}" download>
-                    How the schedules are generated (Please read the code for a more accurate understanding)
+                Or try to find someone willing to switch place with you
+                if it's too late and the schedule has been generated.
+            </p>
+            <p>
+                <a href="/schedules/Access">
+                    How to access this website without connecting to the wifi?
+                </a>
+            </p>
+            <p class="glowing"><a href="/click-me" download>Click me</a></p>
+            <p>
+                <a href="/schedules/download/record.json" download>
+                    Download record.json
                 </a>
             </p>
             <p>
-                <a href="/cleaning_schedules/ip_and_domain">How to access this website without connecting to the wifi?</a>
+                <a href="/schedules/download/everything" download>
+                    Download everything 
+                    (Note: The record inside may be out-of-date. 
+                     Use the link above to download latest record.json)
+                </a>
             </p>
-            <p>
-                <a href="/dont_click">Try not to click</a>
-            </p>
-            
         </footer>
     </body>
 </html>

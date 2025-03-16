@@ -43,6 +43,8 @@ def route_update_record(which: str):
     weekyear = WeekYear(int(week), int(year))
     person_name = " ".join(person_name.split('-'))
     app.record.flip_status(weekyear, chore_name, person_name)
+    app.record.save_to_json("record.json")
+    print("record.json saved.")
     return redirect(app.get_link_to_this_weekyear())
 
 
@@ -68,4 +70,11 @@ def route_download_everything():
 
 @schedules.route("/schedules/download/record.json", methods=["GET"])
 def route_download_record_json():
+    app.record.save_to_json("record.json")
+    print("record.json saved.")
     return send_file("../record.json")
+
+
+@schedules.route("/schedules/Access")
+def route_access():
+    return render_template("access.html")

@@ -1,0 +1,22 @@
+.*/
+*.DS_Store
+*__pycache__
+Records*.json
+record.json
+namelist*.txt
+namelist*.json
+app/static/images/Garbages\ 2025.jpeg
+app/static/images/basement_cleaning.png
+app/static/images/garbages.jpeg
+app/static/images/glass.jpeg      
+app/static/images/house_plan.png
+app/static/images/kitchen_cleaning.jpeg
+app/static/images/toilet_cleaning.jpeg
+app/static/images/toilet_cleaning.jpeg
+app/static/images/pool/*
+!app/static/images/pool/avatar.jpeg
+!app/static/images/pool/banner.jpeg
+!app/static/images/pool/wallpaper.jpeg
+*.ico
+apple_touch*.png
+app/templates/more_info/*-*.html

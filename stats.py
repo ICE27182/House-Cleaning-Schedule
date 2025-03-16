@@ -1,11 +1,11 @@
 
 from sys import argv
-from app import Record, WeekYear, Chore
+from app import Record, WeekYear, Chore, app
 from collections.abc import Iterable
 
 from app.chore import _load_namelist_json as load_namelist_json
 
-N = 100
+NUM_OF_WEEKS_BACK = 100
 
 def flatten(namelist) -> list[str]:
         out = []
@@ -21,7 +21,7 @@ def bar_chart(record: Record,
                 this_weekyear: WeekYear,
                 record_range: range = range(-53, 53)) -> str:
     out = []
-    length = 200 / N if N > 100 else 2
+    length = 200 / NUM_OF_WEEKS_BACK if NUM_OF_WEEKS_BACK > 100 else 2
     record_past = str(record.slice(this_weekyear+record_range.start, this_weekyear).to_json())
     record_future = str(record.slice(this_weekyear, this_weekyear+record_range.stop).to_json())
     for i, name in enumerate(sorted(namelist)):
@@ -76,13 +76,16 @@ def chore_distribution(record: Record,
             out.append(f"{color}{name:8}{count:<3}")
         out.append("\033[0m\n\n")
     return "".join(out)
+
+
+
 if __name__ == "__main__":
     if len(argv) <= 1:
-        N = 12
+        NUM_OF_WEEKS_BACK = 12
     else:
         print(argv)
-        N = int(argv[1])
-    record = Record.load_from_json_file("record.json")
+        NUM_OF_WEEKS_BACK = int(argv[1])
+    record = app.record
     namelist = load_namelist_json("namelist.json")
     chores = Chore.load_chores_from_json("chores.json")
     print(
@@ -90,7 +93,7 @@ if __name__ == "__main__":
             record,
             namelist,
             WeekYear.present_weekyear(), 
-            range(-N, max(record) - WeekYear.present_weekyear())
+            range(-NUM_OF_WEEKS_BACK, max(record) - WeekYear.present_weekyear())
         )
     )
     print(
@@ -98,7 +101,7 @@ if __name__ == "__main__":
             record, 
             chores,
             WeekYear.present_weekyear(),
-            range(-N, max(record) - WeekYear.present_weekyear()),
+            range(-NUM_OF_WEEKS_BACK, max(record) - WeekYear.present_weekyear()),
         )
     )
 
