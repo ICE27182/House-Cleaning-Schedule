@@ -1,40 +1,37 @@
 # House-Cleaning-Schedule
-A scheduling website written in html, css and python. It can automatically assign tasks to different person based on past records, show the schedules in a web page and allow people to update the records by interacting with the webpage. It mainly focuses on weekly tasks but tasks with different periods also possible to add.
+A scheduling website written in html, css and python. 
+
+It can automatically and randomly assign chores to different persons balanced by past records, show the schedules web pages and allow people to update the records by interacting with the webpage. 
+
+It mainly focuses on weekly chores but chores with longer periods are also supported.
+However, it is less suitable for chores with much shorter periods such as a daily chore.
 
 # How to run?
-Python version: 3.13+ (maybe lower version will also work, but I didn't test them)  
-Library needed: flask
+Python version: 3.13+ 
+Library needed: Flask 3.1.0+
+Lower version may also work, but I did not test in lower versions.
 
-Because it is more of a final product than a framework, and I have excluded a few files for privacy reasons, you cannot run it right away.
+In order to run the project, you also need to manually add 
+an empty `record.json` (an empty dictionary will suffice) 
+and a list of strings stored in `namelist.json`,
+which I cannot include due to privacy reasons.
 
-To be able to run it, you can simply add two files: ```namelist.txt``` and ```namelist_toilet.txt```, in which you need to put a few names inside separated by whitespace.  
-Note that names starting with ```#``` will be ignored.
+You may also modify the namelists specified in chores.json.
 
-For example:  
+Just for illustration purpose, you can simply use `unittests/namelist.json`.
 
-```namelist.txt```:  
-```
-N54 WNS    SovOil  Petrochem
-Tsunami-Defense-Systems  SegAtari
-#Sycust   Raven-Microcyberetics   
-```
-(Sycust will be ignored)
-```namelist_toilet.txt```:  
-```
-Arasaka   Militech  
-Kang-Tao #Zetatech #Lazarus  Biotechnica 
-Night-Corp Mitsubishi-Sugo  Kiroshi-Optics
+You may need to change the path used in `chores.json`.
 
-```
-(Zetatech and Lazarus will be ignored)
-
-I have also deleted all images, which should not prevent the website from running.
-
-```python3 run.py``` or ```python run.py``` will start the web application. 
-You can visit the website by directly typing ```localhost``` in your web browser.
+`python3 run.py` or `python run.py` will start the web application. 
+You can visit the website by directly typing `localhost` in your web browser.
 
 # How can I modify the code to fit my use?
-- Change ```namelist.py``` to read from different files
-- Change tasks added in ```database.py``` and 
-- Change ```more_info.py``` so it covers the task changes above. Also, remember to update the corresponing ```html```files in ```/app/templates/cleaning_schedules/``` if necessary
-- Add images at ```/app/static/images/```.
+- Modify `chores.json`. To use other file names and paths, goto `app/app.py`.
+- Modify or add `namelist.json`. 
+  You can have multiple name lists for different purposes
+- Modify `record.json`.
+- Modify auto-generated more_info pages at `app/templates/more_info/`. 
+  Note that they will only be auto-generated when the correspoding page
+  is visited and the html file does not exists.
+- Add photos and images.
+- Modify the code :D
