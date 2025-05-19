@@ -20,3 +20,6 @@ app/static/images/pool/*
 *.ico
 apple_touch*.png
 app/templates/more_info/*-*.html
+admins_and_log.html
+admins_log.txt
+passkeys.json

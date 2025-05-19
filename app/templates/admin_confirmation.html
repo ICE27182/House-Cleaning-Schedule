@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    </head>
+    
+    <body>
+        <h1>{{ admin_name }}, you are trying to {{ confirmation | safe }}</h1>
+        <h1>Are you sure about that?</h1>
+        <table class="left_right">
+            <th>
+                <a href = "/">Back</a>
+            </th>
+            <th>
+                <a href = {{ confirmed | safe }}>Confirm</a>
+            </th>
+        </table>
+        </footer>
+    </body>
+</html>

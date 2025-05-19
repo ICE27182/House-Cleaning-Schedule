@@ -1,5 +1,6 @@
 
 
+from .admins import Admins
 from .weekyear import WeekYear
 from .chore import Chore
 from .record import Record
@@ -10,10 +11,11 @@ from os import PathLike, getcwd
 from os.path import dirname, exists
 from shutil import make_archive, copy
 
-@dataclass
+@dataclass(slots=True)
 class App:
     record: Record
     chores: Iterable[Chore]
+    admins: Admins
     record_path: PathLike = "record.json"
     _weekyear: None|WeekYear = None # For testing & debugging
 
@@ -163,6 +165,145 @@ class App:
             string_buff.append('\t</tr>\n')
         string_buff.append("</table>")
         return "".join(string_buff)
+    
+
+    def confirm_admin_set(self, weekyear: WeekYear, chore_name: str, 
+                          name: str, status: str, past_tense: bool) -> str:
+        """
+        Return a confirmation string.
+        Raise a ValueError if the arguments are invalid.
+        """
+        if status.lower() == "true":
+            status = True
+        elif status.lower() == "false":
+            status = False
+        else:
+            raise ValueError("Invalid status. "
+                             f"Expected either `True` or `False`. "
+                             f"Got `{status}`.")
+        if weekyear not in self.record:
+            raise ValueError("Invalid week and/or year. "
+                             f"Got week {weekyear.week} in {weekyear.year}.")
+        if chore_name not in self.record[weekyear]:
+            raise ValueError("Invalid chore name with given week and year. "
+                             f"Got {chore_name}.")
+        if name in self.record[weekyear][chore_name].people:
+            new_status = not self.record[weekyear][chore_name].people[name]
+        else:
+            raise ValueError("Invalid name. "
+                                f"'{name}' is not in the record with given "
+                                "week, year and chore name.")
+        word_set = "set" if past_tense else "set"
+        return (f"{word_set} the status of '{name}' in chore '{chore_name}' "
+                f"for week {weekyear.week} in {weekyear.year} to {new_status}.")
+    
+    def execute_admin_set(self, weekyear: WeekYear, chore_name: str, 
+                          name: str, status: str) -> None:
+        """
+        Will run confirm_admin_set first to validate the arguments.
+        ValueError will raise if the arguments are invalid.
+        """
+        self.confirm_admin_set(weekyear, chore_name, name, status, False)
+        status = True if status.lower() == "true" else False
+        self.record[weekyear][chore_name].people[name] = status
+
+
+    def confirm_admin_change(self, weekyear: WeekYear, chore_name: str, 
+                             from_name: str, to_name: str, past_tense: bool) -> str:
+        """
+        Return a confirmation string.
+        Does not check if the `to_name` is valid or not.
+        Raise a ValueError if the arguments are invalid.
+        """
+        if weekyear not in self.record:
+            raise ValueError("Invalid week and/or year. "
+                             f"Got week {weekyear.week} in {weekyear.year}.")
+        if chore_name not in self.record[weekyear]:
+            raise ValueError("Invalid chore name with given week and year. "
+                             f"Got {chore_name}.")
+        if from_name not in self.record[weekyear][chore_name].people:
+            raise ValueError("Invalid name. "
+                             f"'{from_name}' is not in the record with given "
+                             "week, year and chore name.")
+        if from_name == to_name:
+            raise ValueError("Invalid names. "
+                             f"'{from_name}' and '{to_name}' are the same.")
+        word_change = "changed" if past_tense else "change"
+        return (f"{word_change} '{from_name}' in chore '{chore_name}' "
+                f"for week {weekyear.week} in {weekyear.year} to '{to_name}'.")
+    
+    def execute_admin_change(self, weekyear: WeekYear, chore_name: str, 
+                             from_name: str, to_name: str) -> None:
+        """
+        Will run confirm_admin_change first to validate the arguments.
+        ValueError will raise if the arguments are invalid.
+        """
+        self.confirm_admin_change(weekyear, chore_name, from_name, to_name, False)
+        self.record[weekyear][chore_name].people[to_name] = (
+            self.record[weekyear][chore_name].people[from_name]
+        )
+        del self.record[weekyear][chore_name].people[from_name]
+        
+    
+    # def confirm_admin_command(self, command: str, weekyear: WeekYear,
+    #                           chore_name: str, name: str) -> str:
+    #     """
+    #     Return a confirmation string.
+    #     Raise a ValueError if the arguments are invalid.
+    #     """
+    #     if weekyear not in self.record:
+    #         raise ValueError("Invalid week and/or year. "
+    #                          f"Got week {weekyear.week} in {weekyear.year}.")
+    #     if chore_name not in self.record[weekyear]:
+    #         raise ValueError("Invalid chore name with given week and year. "
+    #                          f"Got {chore_name}.")
+        
+    #     if command == "add":
+    #         if name in self.record[weekyear][chore_name].people:
+    #             raise ValueError("Invalid name. "
+    #                              f"'{name}' is already in the record with "
+    #                              "given week, year and chore name.")
+    #         return (f"add '{name}' in chore '{chore_name}' "
+    #                 f"for week {weekyear.week} in {weekyear.year}.")
+    #     elif command == "change":
+    #         if name in self.record[weekyear][chore_name].people:
+    #             new_status = not self.record[weekyear][chore_name].people[name]
+    #         else:
+    #             raise ValueError("Invalid name. "
+    #                              f"'{name}' is not in the record with given "
+    #                              "week, year and chore name."
+    #                              "Use 'add' command if you want to add a new "
+    #                              "person if you want to add a new person.")
+    #         return (f"change the status of '{name}' in chore '{chore_name}' "
+    #                 f"for week {weekyear.week} in {weekyear.year} to {new_status}.")
+    #     elif command == "remove":
+    #         if name in self.record[weekyear][chore_name].people:
+    #             return (f"remove '{name}' from chore '{chore_name}' "
+    #                     f"for week {weekyear.week} in {weekyear.year}.")
+    #         else:
+    #             raise ValueError("Invalid name. "
+    #                              f"'{name}' is not in the record with given "
+    #                              "week, year and chore name.")
+    #     else:
+    #         raise ValueError("Invalid command. "
+    #                          "Expected either `add`, `change` or `remove`. "
+    #                          f"Got `{command}`.")
+    
+    # def execute_admin_command(self, command: str, weekyear: WeekYear, 
+    #                           chore_name: str, name: str) -> None:
+    #     """
+    #     Will run confirm_admin_command first to validate the arguments.
+    #     ValueError will raise if the arguments are invalid.
+    #     """
+    #     self.confirm_admin_command(command, weekyear, chore_name, name)
+    #     if command == "add":
+    #         self.record[weekyear][chore_name][name] = False
+    #     elif command == "change":
+    #         status = self.record[weekyear][chore_name][name]
+    #         self.record[weekyear][chore_name][name] = not status
+    #     elif command == "remove":
+    #         del self.record[weekyear][chore_name][name]
+        
 
     @staticmethod
     def _get_status_button_link(weekyear: WeekYear,
@@ -178,11 +319,14 @@ class App:
     @staticmethod
     def urlize(line: str) -> str:
         return "-".join(line.lower().split())
+    
 
 record_path = "record.json"
 chores_path = "chores.json"
+passkeys_path = "passkeys.json"
 app = App(
     record=Record.load_from_json_file(record_path),
     chores=Chore.load_chores_from_json(chores_path),
     record_path=record_path,
+    admins=Admins(passkeys_path),
 )

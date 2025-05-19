@@ -2,7 +2,7 @@
 
 from app import create_website, app, WeekYear, Record
 
-app.compress_everything()
+# app.compress_everything()
 
 website = create_website()
 
