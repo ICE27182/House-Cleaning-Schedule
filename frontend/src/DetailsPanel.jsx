@@ -90,7 +90,14 @@ const DetailsPanel = ({ open, mode = "details", a, onClose, onSwap, onReassign, 
             <div className="text-sm">Pick exactly {a.num} assignee(s) from the pool.</div>
             <div className="flex flex-wrap gap-2">
               {pool.map(p => (
-                <button key={p} onClick={()=>setReassign(prev => prev.includes(p)? prev.filter(x=>x!==p) : prev.length < a.num ? [...prev, p] : prev)} className={`px-2.5 py-1.5 rounded-full border ${reassign.includes(p)?"bg-indigo-600 text-white border-indigo-600":"bg-white border-gray-300"}`}>
+                <button 
+                  key={p} 
+                  onClick={() => setReassign(prev => 
+                    prev.includes(p) 
+                      ? prev.filter(x => x!==p) 
+                      : prev.length < a.num ? [...prev, p] : prev)} 
+                    className={`px-2.5 py-1.5 rounded-full border ${reassign.includes(p)?"bg-indigo-600 text-white border-indigo-600":"bg-white border-gray-300"}`}
+                >
                   {p}
                 </button>
               ))}
@@ -98,7 +105,7 @@ const DetailsPanel = ({ open, mode = "details", a, onClose, onSwap, onReassign, 
             <div className="text-sm text-gray-600">Selected: {reassign.join(", ") || "—"}</div>
             <div>
               <div className="text-sm text-gray-600 mb-1">Reason (optional)</div>
-              <input value={reason} onChange={(e)=>setReason(e.target.value)} placeholder="e.g., balancing workload" className="w-full border rounded-lg px-3 py-2"/>
+              <input value={reason} onChange={(e)=>setReason(e.target.value)} placeholder="e.g. I want to play minecraft" className="w-full border rounded-lg px-3 py-2"/>
             </div>
             <div className="flex justify-end gap-2">
               <button onClick={onClose} className="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Cancel</button>

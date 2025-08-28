@@ -35,7 +35,7 @@ const ChoreCard = ({ a, onOpen, onToggle, canEdit }) => {
       <div className="mt-4 flex items-center gap-2">
         <button onClick={() => onOpen(a)} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200"><Info className="w-4 h-4"/> Details</button>
         {canEdit && (
-          <button onClick={() => onOpen(a, "edit")} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><Pencil className="w-4 h-4"/> Edit</button>
+          <button onClick={() => onOpen(a, "edit")} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><Shuffle className="w-4 h-4"/> Edit</button>
         )}
       </div>
     </motion.div>
