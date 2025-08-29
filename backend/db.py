@@ -1,4 +1,5 @@
 from duckdb import connect
+from werkzeug.security import generate_password_hash
 import os
 
 DB_FILE = os.path.join(os.path.dirname(__file__), "chores.db")
@@ -13,14 +14,14 @@ def create_tables():
             is_available BOOLEAN NOT NULL DEFAULT TRUE,
             -- Login
             password_hash VARCHAR,
-            session_cookie_token VARCHAR,
+            session_cookie_token VARCHAR DEAFULT NULL,
             -- Where
             main_gate BOOLEAN NOT NULL,
             staris BOOLEAN NOT NULL,
             upstaris BOOLEAN NOT NULL,
             - When
             joined_at_around TIMESTAMP,
-            left_at_around TIMESTAMP,
+            left_at_around TIMESTAMP DEFAULT NULL,
         );
         """)
         conn.execute("""
@@ -54,14 +55,11 @@ def create_tables():
 def fill_data():
     # TODO Convert good old json into queries
     with connect(DB_FILE) as conn:
-        raise NotImplementedError
-        conn.execute("INSERT OR IGNORE INTO people (name) VALUES ('Alice'), ('Bob'), ('Charlie');")
-        conn.execute("""
-            INSERT OR IGNORE INTO chores (name, description, frequency, people_group)
-            VALUES 
-            ('Dishes', 'Wash dishes after dinner', 'weekly', '[1,2,3]'),
-            ('Trash', 'Take out trash', 'biweekly', '[1,2,3]');
-        """)
+        conn.execute("""INSERT INTO people VALUES
+                        (0, ICE27182, false, ?, NULL, 
+                         false, false, false, 
+                         '1992-09-20 11:30:00.123456789', NULL)""",
+                     generate_password_hash("P"))
 
 if __name__ == "__main__":
     create_tables()
