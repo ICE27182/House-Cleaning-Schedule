@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Circle, Users, Calendar, History, Shuffle, Pencil, ClipboardList, Info, X, Plus, UserRound, TabletSmartphone } from "lucide-react";
+import { CheckCircle2, Circle, Users, Calendar, History, Shuffle, Pencil, ClipboardList, Info, X, Plus, UserRound, TabletSmartphone, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DetailsPanel } from "./DetailsPanel";
 import { WeekSwitcher} from "./WeekSwitcher";
@@ -209,11 +209,10 @@ export default function App() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex gap-2 mb-4">
           <button onClick={()=>setMode("dashboard")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='dashboard'? 'bg-gray-900 text-white' : 'bg-white'} `}>Dashboard</button>
           <button onClick={()=>setMode("people")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='people'? 'bg-gray-900 text-white' : 'bg-white'} `}>People</button>
           <button onClick={()=>setMode("chores")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='chores'? 'bg-gray-900 text-white' : 'bg-white'} `}>Chores</button>
-          <button onClick={()=>setMode("items")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='items'? 'bg-gray-900 text-white' : 'bg-white'} `}>Common items to buy</button>
           <button onClick={()=>setMode("details")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='details'? 'bg-gray-900 text-white' : 'bg-white'} `}>More Info</button>
         </div>
 
@@ -245,15 +244,6 @@ export default function App() {
           </div>
         )}
 
-        {mode === "items" && (
-          <div className="rounded-2xl border bg-white p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>Common Items</div>
-            </div>
-            <p>To be added</p>
-          </div>
-        )}
-
         {mode === "details" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <section className="md:col-span-2">
@@ -265,6 +255,12 @@ export default function App() {
                   <li>Sign in to make changes to existing schedules. All changes will be recorded and are visible to everyone</li>
                   <li>The abilities to add/remove/change persons and chores on the website are yet to be added.</li>
                 </ul>
+                <a 
+                  href="http://minecraft.fandom.com"
+                  className="inline-block border-2 rounded-2xl p-2 font-semibold my-3 items-center gap-2 hover:bg-blue-950 hover:text-white"
+                >
+                  <ShoppingBag className="inline w-4 h-4"/> Common item trackers
+                </a>
               </div>
             </section>
             <aside>

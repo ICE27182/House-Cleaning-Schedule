@@ -105,7 +105,7 @@ const DetailsPanel = ({ open, mode = "details", a, onClose, onSwap, onReassign, 
             <div className="text-sm text-gray-600">Selected: {reassign.join(", ") || "—"}</div>
             <div>
               <div className="text-sm text-gray-600 mb-1">Reason (optional)</div>
-              <input value={reason} onChange={(e)=>setReason(e.target.value)} placeholder="e.g. I want to play minecraft" className="w-full border rounded-lg px-3 py-2"/>
+              <input value={reason} onChange={(e)=>setReason(e.target.value)} placeholder="e.g. I need to play minecraft" className="w-full border rounded-lg px-3 py-2"/>
             </div>
             <div className="flex justify-end gap-2">
               <button onClick={onClose} className="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200">Cancel</button>
