@@ -1,8 +1,30 @@
-from duckdb import connect
+import duckdb
 from werkzeug.security import generate_password_hash
 import os
+from typing import Generator
+from contextlib import contextmanager
 
 DB_FILE = os.path.join(os.path.dirname(__file__), "chores.db")
+@contextmanager
+def connect(
+    database: str = DB_FILE, 
+    read_only: bool = False, 
+    config: dict | None = None
+) -> Generator[duckdb.DuckDBPyConnection, None, None]:
+    with duckdb.connect(database, read_only, config) as conn:
+        yield conn
+    
+
+@contextmanager
+def conn_r() -> Generator[duckdb.DuckDBPyConnection, None, None]:
+    with duckdb.connect(DB_FILE, True) as conn:
+        yield conn
+
+@contextmanager
+def conn_w() -> Generator[duckdb.DuckDBPyConnection, None, None]:
+    with duckdb.connect(DB_FILE, False) as conn:
+        yield conn
+
 
 def create_tables():
     with connect(DB_FILE) as conn:

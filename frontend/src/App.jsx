@@ -6,6 +6,7 @@ import { WeekSwitcher} from "./WeekSwitcher";
 import { LoginBadge } from "./LoginBadge";
 import { ChoreCard } from "./ChoreCard";
 import Changelog from "./Changelog";
+import People from "./People";
 
 /**
  * House Chores – React + Tailwind Prototype
@@ -229,24 +230,7 @@ export default function App() {
               <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>People (Editing support is coming)</div>
               {!canEdit && <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">Login to make changes</div>}
             </div>
-            <div className="flex flex-col flex-wrap gap-4">
-              {Object.entries(POOLS).map(([namelistName, namelist]) => (
-                <div className="flex flex-col gap-2">
-                  <div className="font-semibold flex items-center gap-2"><ClipboardList />{namelistName}</div>
-                  <div className="flex flex-wrap gap-2 mx-6">
-                    {namelist.map(p => (
-                      <button 
-                        key={p}
-                        className={`px-2.5 py-1.5 rounded-full border "bg-white border-gray-300"}`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="mx-4 mb-2 mt-1 border-1 border-blue-950"></div>
-                </div>
-              ))}
-            </div>
+            <People/>
           </div>
         )}
 
