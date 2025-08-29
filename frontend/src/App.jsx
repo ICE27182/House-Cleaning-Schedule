@@ -139,6 +139,22 @@ export default function App() {
   const assignments = useMemo(() => rotateAssignments({ week: week.week, year: week.year, chores: CHORE_DEFS, pools: POOLS }), [week]);
   const [doneMap, setDoneMap] = useState({}); // assignmentId -> Set(names)
 
+  // Automatically login with cookie
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/auth/me", { credentials: "include" })
+      .then(async (res) => {
+        if (!mounted) return;
+        if (!res.ok) return setUser("");
+        const data = await res.json().catch(()=>({}));
+        setUser(data?.name || "");
+      })
+      .catch(()=> {
+        if (mounted) setUser("");
+      });
+    return () => { mounted = false; };
+  }, []);
+
   // reflect done state onto assignments
   const cards = assignments.map(a => ({ ...a, done: Array.from(doneMap[a.id] || new Set()) }));
 
@@ -284,7 +300,7 @@ export default function App() {
             </section>
             <aside>
               <div className="rounded-2xl border bg-white p-4">
-                <div className="font-semibold mb-3 flex items-center gap-2"><History className="w-4 h-4"/> Changes made</div>
+                <div className="font-semibold mb-3 flex items-center gap-2"><History className="w-4 h-4"/> Change log</div>
                 <div className="text-sm text-gray-500">All swaps/reassignments will appear here with who/when/why.</div>
               </div>
             </aside>
