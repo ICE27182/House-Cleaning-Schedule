@@ -8,7 +8,6 @@ const People = () => {
       .then(response => response.json()
         .then(data => setNameLists(data)))
   }, [])
-  useEffect(() => console.log(nameLists), [nameLists])
   return (
    <div className="flex flex-col flex-wrap gap-4">
     {nameLists && Object.entries(nameLists).map(([namelistName, namelist]) => (
