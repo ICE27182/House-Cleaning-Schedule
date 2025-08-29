@@ -5,6 +5,7 @@ import { DetailsPanel } from "./DetailsPanel";
 import { WeekSwitcher} from "./WeekSwitcher";
 import { LoginBadge } from "./LoginBadge";
 import { ChoreCard } from "./ChoreCard";
+import Changelog from "./Changelog";
 
 /**
  * House Chores – React + Tailwind Prototype
@@ -299,10 +300,7 @@ export default function App() {
               </div>
             </section>
             <aside>
-              <div className="rounded-2xl border bg-white p-4">
-                <div className="font-semibold mb-3 flex items-center gap-2"><History className="w-4 h-4"/> Change log</div>
-                <div className="text-sm text-gray-500">All swaps/reassignments will appear here with who/when/why.</div>
-              </div>
+              <Changelog />
             </aside>
           </div>
         )}
