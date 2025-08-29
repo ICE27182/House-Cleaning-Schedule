@@ -10,8 +10,8 @@ const People = () => {
   }, [])
   return (
    <div className="flex flex-col flex-wrap gap-4">
-    {nameLists && Object.entries(nameLists).map(([namelistName, namelist]) => (
-          <div className="flex flex-col gap-2">
+    {nameLists && Object.entries(nameLists).map(([namelistName, namelist], i) => (
+          <div key={i} className="flex flex-col gap-2">
             <div className="font-semibold flex items-center gap-2"><ClipboardList />{namelistName}</div>
             <div className="flex flex-wrap gap-2 mx-6">
               {Object.entries(namelist)
@@ -19,9 +19,9 @@ const People = () => {
                   avaiA === avaiB 
                   ? nameA.localeCompare(nameB)
                   : avaiB - avaiA)
-                .map(([name, isAvailable], i) => (
+                .map(([name, isAvailable], j) => (
                 <button 
-                  key={i}
+                  key={j}
                   className={`px-2.5 py-1.5 rounded-full ${isAvailable ? "bg-white border border-gray-300" : "text-white bg-gray-200"}`}
                 >
                   {name}

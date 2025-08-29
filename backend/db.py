@@ -1,20 +1,12 @@
 import duckdb
 from werkzeug.security import generate_password_hash
 import os
+from json import load
+from re import compile
 from typing import Generator
 from contextlib import contextmanager
 
 DB_FILE = os.path.join(os.path.dirname(__file__), "chores.db")
-@contextmanager
-def connect(
-    database: str = DB_FILE, 
-    read_only: bool = False, 
-    config: dict | None = None
-) -> Generator[duckdb.DuckDBPyConnection, None, None]:
-    with duckdb.connect(database, read_only, config) as conn:
-        yield conn
-    
-
 @contextmanager
 def conn_r() -> Generator[duckdb.DuckDBPyConnection, None, None]:
     with duckdb.connect(DB_FILE, True) as conn:
@@ -26,8 +18,8 @@ def conn_w() -> Generator[duckdb.DuckDBPyConnection, None, None]:
         yield conn
 
 
-def create_tables():
-    with connect(DB_FILE) as conn:
+def create_tables() -> None:
+    with conn_w() as conn:
         conn.execute("CREATE SEQUENCE IF NOT EXISTS seq_people_id START 1")
         conn.execute("CREATE SEQUENCE IF NOT EXISTS seq_chores_id START 1")
         conn.execute("CREATE SEQUENCE IF NOT EXISTS seq_assignments_id START 1")
@@ -55,8 +47,10 @@ def create_tables():
             id INTEGER PRIMARY KEY DEFAULT NEXTVAL('seq_chores_id'),
             name TEXT UNIQUE NOT NULL,
             description TEXT,
-            frequency TEXT NOT NULL,  -- "weekly", "biweekly:0", "weeks:[5,10,20]", "freq:4,offset:3"
-            people_group TEXT NOT NULL -- JSON array of person_ids,
+            image_path TEXT,
+            frequency TEXT NOT NULL,
+            people_group TEXT NOT NULL,
+            assignee_count INTEGER NOT NULL,
         );
         """)
         conn.execute("""
@@ -77,23 +71,68 @@ def create_tables():
         );
         """)
         
-
-def fill_data():
-    # TODO Convert good old json into queries
-    with connect(DB_FILE, read_only=False) as conn:
-        conn.execute("""INSERT INTO people VALUES
-                        (0, 'ICE27182', false, ?, NULL, 
-                         false, false, false, 
-                         '1992-09-20 11:30:00.123456789', NULL)""",
-                     (generate_password_hash("P"), ))
-        conn.execute("""INSERT INTO changelog(description) VALUES
-                     ('Initial log')""")
-
-def reset():
-    os.remove(DB_FILE)
+def fill_data() -> None:
+    try:
+        from backend.from_namelists import add_people
+        add_people()
+        print("PEOPLE ADDED")
+    except (ModuleNotFoundError, ImportError) as e:
+        print(f"NAME FALLBACK due to {e}")
+        with conn_w() as conn:
+            conn.execute("""INSERT INTO people VALUES
+                            (0, 'ICE27182', false, ?, NULL, 
+                            false, false, false, 
+                            '1992-09-20 11:30:00.123456789', NULL)""",
+                        (generate_password_hash("P"), ))
+            conn.execute("""INSERT INTO changelog(description) VALUES
+                        ('Initial log')""")
+    add_chore("chores.json")
+        
+def reset() -> None:
+    if os.path.exists(DB_FILE):
+        os.remove(DB_FILE)
     create_tables()
     fill_data()
 
-if __name__ == "__main__":
-    reset()
-    print("Database reset with sample data.")
+def add_chore(json_path: str) -> None:
+    try:
+        with open("chore_descriptions.json", 'r') as file:
+            DESCRIPTION = load(file)
+    except FileNotFoundError:
+        DESCRIPTION = {"Kitchen Cleaning": "Here's the description",
+                       "House Vacuuming": "Here's the description", 
+                       "Basement Cleaning": "Here's the description",
+                       "Glass Garbage": "Here's the description",
+                       "Cardboard Garbage": "Here's the description",
+                       "Organic Garbage": "Here's the description",
+                       "Plastic Garbage":"Here's the description",
+                       "Bathroom & Toilet - Stairs": "Here's the description",
+                       "Bathroom & Toilet - Main Gate": "Here's the description",
+                       "Bathroom & Toilet - Upstairs": "Here's the description"}
+    with open(json_path, 'r') as json_file:
+        chores = load(json_file)
+    periodically = compile(r"^Once per (?:(\d+) )?weeks?\s*(?:on ([a-zA-Z]+day) )?(?:with offset (\d+))?$")
+    specifically = compile(r"^Weeks (?:on ([A-Z][a-zA-Z]+day) )?in (\d{4}):((?: \d+)+)$")
+    with conn_w() as conn:
+        for chore in chores:
+            name = chore["name"]
+            if name.endswith("North"):
+                name = "Bathroom & Toilet - Stairs"
+            elif name.endswith("South"):
+                name = "Bathroom & Toilet - Main Gate"
+            elif name.endswith("Second Floor"):
+                name = "Bathroom & Toilet - Upstairs"
+            group = chore["namelist"]
+            if group == "namelist.json":
+                group = "everyone"
+            elif group == "namelist_north.json":
+                group = "stairs"
+            elif group == "namelist_south.json":
+                group = "main_gate"
+            elif group == "namelist_second_floor.json":
+                group = "upstairs"
+            elif group not in {"everyone", "stairs", "main_gate", "upstairs"}:
+                raise ValueError(f"Invalid group. Got {repr(group)}.")
+            conn.execute("""INSERT INTO chores(name, description, image_path, frequency, people_group, assignee_count) VALUES (?, ?, ?, ?, ?, ?)""",
+                         (name, DESCRIPTION[name], f"{name}.png", chore["how_often"], group, chore["num_of_people"]))
+    

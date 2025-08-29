@@ -11,7 +11,7 @@ const AssigneeChip = ({ name, active, onToggle }) => {
   );
 }
 
-const ChoreCard = ({ a, onOpen, onToggle, canEdit }) => {
+const AssignmentCard = ({ a, onOpen, onToggle, canEdit }) => {
   const allDone = a.assignees.every(p => a.done.includes(p));
   const dayBadge = a.execDate ? `Due Sun ${a.execDate.slice(5)}` : "Any day this week";
   return (
@@ -41,4 +41,4 @@ const ChoreCard = ({ a, onOpen, onToggle, canEdit }) => {
     </motion.div>
   );
 }
-export {ChoreCard}
+export {AssignmentCard}

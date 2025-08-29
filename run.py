@@ -1,6 +1,8 @@
 
 
 from backend.app import app
+from backend.db import reset
+reset()
 print(str(app.url_map._rules_by_endpoint).replace("],", "],\n"))
 app.run(host="0.0.0.0", debug=True, port=8088)
 

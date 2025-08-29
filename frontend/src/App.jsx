@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DetailsPanel } from "./DetailsPanel";
 import { WeekSwitcher} from "./WeekSwitcher";
 import { LoginBadge } from "./LoginBadge";
-import { ChoreCard } from "./ChoreCard";
+import { AssignmentCard } from "./AssignmentCard";
 import Changelog from "./Changelog";
 import People from "./People";
+import Chores from "./Chores";
 
 /**
  * House Chores – React + Tailwind Prototype
@@ -219,7 +220,7 @@ export default function App() {
         {mode === "dashboard" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {cards.map((a) => (
-              <ChoreCard key={a.id} a={a} onOpen={(card, m)=>openPanel(card, m)} onToggle={onToggle} canEdit={canEdit} />
+              <AssignmentCard key={a.id} a={a} onOpen={(card, m)=>openPanel(card, m)} onToggle={onToggle} canEdit={canEdit} />
             ))}
           </div>
         )}
@@ -240,23 +241,7 @@ export default function App() {
               <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>Chores (Editing support is coming)</div>
               {!canEdit && <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">Login to make changes</div>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {cards.map(a => (
-                <div key={a.id} className="border rounded-2xl p-4">
-                  <div className="font-medium mb-2">{a.name}</div>
-                  <div className="text-sm text-gray-600 mb-2">Assignees: {a.assignees.join(", ") || "—"}</div>
-                  <div className="flex flex-wrap gap-2">
-                    <button 
-                      disabled={!canEdit} 
-                      onClick={()=>openPanel(a, "swap")}
-                      className="px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white disabled:opacity-50"
-                    >
-                      <Pencil className="w-4 h-4 inline mr-1"/> Edit
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Chores />
           </div>
         )}
 
@@ -266,7 +251,6 @@ export default function App() {
               <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>Common Items</div>
             </div>
             <p>To be added</p>
-            <p>Maybe a matrix just like what we had with numbers instead of ticks in its cells. And left click to add one and right click (onContextMenu) to decrease one?</p>
           </div>
         )}
 
@@ -302,7 +286,7 @@ export default function App() {
         canEdit={canEdit}
       />
 
-      <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-gray-400">All changes are public to everyone on the LAN.</footer>
+      <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-white">ICE27182</footer>
     </div>
   );
 }
