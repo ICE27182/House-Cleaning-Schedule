@@ -42,7 +42,7 @@ const LoginBadge = ({ user, setUser }) => {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center mx-2">
       {user ? (
         <>
           <div className="text-sm flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-100"><UserRound className="w-4 h-4"/> {user}</div>

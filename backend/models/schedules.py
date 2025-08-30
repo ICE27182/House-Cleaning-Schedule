@@ -71,7 +71,9 @@ class Frequency(ABC):
             day = Frequency.DAY_NAME_MAPPING[self.day]
             return f"Due {day} on {due_date}"
         else:
-            return "Any day this week"
+            monday = date.fromisocalendar(year, week, 1).strftime("%d.%m")
+            sunday = date.fromisocalendar(year, week, 7).strftime("%d.%m")
+            return f"Any day in week {week}, {monday}-{sunday} "
     
     @classmethod
     def from_str(cls, frequency: str) -> Frequency:
@@ -136,7 +138,7 @@ class FreqSpecific(Frequency):
     def nth_turn(self, year, week):
         week_no = sorted(self.week_no)
         n = bisect_left(week_no, week)
-        if n >= len(week_no) or n != week_no[n]:
+        if n >= len(week_no) or week != week_no[n]:
             raise ValueError("Invalid year week combination."
                              f"Got {year=} and {week=}.")
         return n    
@@ -372,18 +374,3 @@ def last_week(conn: DuckDBPyConnection, year: int, week: int) -> tuple[int, int]
             return (y, w)
         y, w = prev_yw(y, w)
     return None
-    
-def _test():
-    raise NotImplementedError
-    chore = get_all_chores()[6]
-    print(chore)
-    freq = Frequency.from_str(chore["frequency"])
-    group = [name 
-             for name, is_available in get_people(chore["people_group"]).items()
-             if is_available]
-    freq = Frequency.from_str(chore["frequency"])
-    seed(hash(chore["name"]))
-    shuffle(group)
-    print(group)
-    for week in range(1, 53):
-        print(week, generate(2025, week))

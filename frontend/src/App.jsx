@@ -49,7 +49,6 @@ const isoWeek = (d = new Date()) => {
   };
 }
 
-
 // -------------- Main App --------------
 export default function App() {
   const [week, setWeek] = useState(isoWeek());
@@ -116,8 +115,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-500 to-white">
       <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-6xl mx-auto px-2 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gray-900 text-white grid place-items-center font-bold">D</div>
             <div className="font-semibold">House Chores</div>
           </div>
