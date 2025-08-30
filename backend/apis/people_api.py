@@ -1,11 +1,13 @@
 from flask import Blueprint, request, jsonify
 from backend.models import people, auth
+from backend.db import connect_r
 
 bp = Blueprint("people_api", __name__, url_prefix="/people")
 
 @bp.route("/", methods=["GET"])
 def get_people():
-    return jsonify(people.get_all_people())
+    with connect_r() as conn_r:
+        return jsonify(people.get_all_people(conn_r))
 
 # @bp.route("/add/", methods=["POST"])
 # def add_person():
