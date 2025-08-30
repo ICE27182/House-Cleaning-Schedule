@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from backend.db import conn_r, conn_w
+from backend.db import connect_r, connect_w
 from .people import get_people
 from .chores import get_all_chores, Chore
 from re import compile
@@ -25,7 +25,7 @@ def get_due_str_for_chores(chores: Iterable[str], year: int, week: int) -> dict[
     into a dictionary mapping chore names to the due dates.
     """
     results = {}
-    with conn_r() as conn:
+    with connect_r() as conn:
         for chore_name in chores:
             # Fetch the frequency string from the database for the given chore
             frequency_str = conn.execute(
@@ -185,7 +185,7 @@ def get_schedule(year: int, week: int) -> dict[str, dict[int, tuple[str, bool]]]
         raise ValueError(f"Only schedules {MAX_WEEKS_FROM_NOW} weeks ahead can be queried.")
     # Though it might be read-only, but having conn_w and conn_r 
     # combined can be problematic due to check-then-act
-    with conn_w() as conn:
+    with connect_w() as conn:
         schedule = read_schedule(conn)
         if schedule:
             return schedule
@@ -215,7 +215,7 @@ def mark_done(assignment_id: int, assignee: str) -> bool:
     Returns:
         bool: True if successful; False if nothing has changed.
     """
-    with conn_w() as conn:
+    with connect_w() as conn:
         conn.execute("""UPDATE assignments 
                         SET status = true 
                         WHERE id = ? 
@@ -232,7 +232,7 @@ def mark_not_done(assignment_id: int, assignee: str) -> bool:
     Returns:
         bool: True if successful; False if nothing has changed.
     """
-    with conn_w() as conn:
+    with connect_w() as conn:
         conn.execute("""UPDATE assignments 
                         SET status = false 
                         WHERE id = ? 
@@ -250,7 +250,7 @@ def remove_schedules_from_now() -> None:
     today = date.today()
     year, week, _ = today.isocalendar()
 
-    with conn_w() as conn:
+    with connect_w() as conn:
         # Delete any assignment in a later year, or same year with week >= current week
         conn.execute(
             "DELETE FROM assignments WHERE (year > ?) OR (year = ? AND week >= ?)",

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, make_response
 
-from duckdb import connect
+from backend.db import connect_w, connect_r
 from backend.models import auth
 
 from ..db import DB_FILE
@@ -20,8 +20,9 @@ def login():
 
     if not name or not password:
         return jsonify({"ok": False, "error": "missing credentials"}), 400
-
-    token = auth.get_token(name, password)
+    
+    with connect_w() as conn_w:
+        token = auth.get_token(conn_w, name, password)
     if token is None:
         return jsonify({"ok": False, "error": "invalid credentials"}), 401
 
@@ -39,7 +40,9 @@ def logout():
     """
     token = (request.cookies.get("session_token")
              or (request.get_json(silent=True) or {}).get("session_token"))
-    auth.remove_token(token)
+    
+    with connect_w() as conn_w:
+        auth.remove_token(conn_w, token)
 
     resp = make_response(jsonify({"ok": True}))
     resp.set_cookie("session_token", "", expires=0)
@@ -64,11 +67,13 @@ def change_password():
 
     data = request.get_json(silent=True) or {}
     new_pw = data.get("new_password")
-
     if not new_pw or not isinstance(new_pw, str):
         return jsonify({"ok": False, "error": "new_password required"}), 400
+    
+    with connect_w() as conn_w:
+        password_changed = auth.change_password(conn_w, token, new_pw)
 
-    if auth.change_password(token, new_pw):
+    if password_changed:
         return jsonify({"ok": True})
     else:
         return jsonify({"ok": False, "error": "unauthenticated"}), 401
@@ -83,7 +88,9 @@ def whoami():
     if not token:
         return jsonify({"ok": False, "error": "unauthenticated"}), 401
 
-    person = auth.get_person(token)
+    with connect_r() as conn_r:
+        person = auth.get_person(conn_r, token)
+        
     if person:
         return jsonify({"ok": True, "id": person[0], "name": person[1]})
     else:

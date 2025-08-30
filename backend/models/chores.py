@@ -1,4 +1,4 @@
-from backend.db import conn_r
+from backend.db import connect_r
 from typing import TypedDict
 
 class Chore(TypedDict):
@@ -10,7 +10,7 @@ class Chore(TypedDict):
     assignee_count: int
 
 def get_all_chores() -> list[Chore]:
-    with conn_r() as conn:
+    with connect_r() as conn:
         rows = conn.execute("SELECT id, name, description, frequency, people_group, assignee_count FROM chores").fetchall()
         return [Chore(id=row[0],
                       name=row[1],

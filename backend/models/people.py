@@ -1,8 +1,8 @@
-from backend.db import conn_r, conn_w
+from backend.db import connect_r, connect_w
 from typing import Literal
 
 def get_all_people() -> dict[str, dict[str, bool]]:
-    with conn_r() as conn:
+    with connect_r() as conn:
         rows = conn.execute("""SELECT 
                                 name,
                                 is_available,
@@ -27,7 +27,7 @@ def get_all_people() -> dict[str, dict[str, bool]]:
 def get_people(
     group: Literal["everyone", "main_gate", "stairs", "upstairs"]
 ) -> dict[str, bool]:
-    with conn_r() as conn:
+    with connect_r() as conn:
         if group == "everyone":
             rows = conn.execute("SELECT name, is_available, FROM people").fetchall()
         elif group == "main_gate":

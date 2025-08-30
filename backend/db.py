@@ -8,34 +8,21 @@ from threading import RLock
 
 DB_FILE = os.path.join(os.path.dirname(__file__), "chores.db")
 lock = RLock()
-active_conn = None
 @contextmanager
-def conn_r() -> Generator[duckdb.DuckDBPyConnection, None, None]:
-    global active_conn
+def connect_r() -> Generator[duckdb.DuckDBPyConnection, None, None]:
     with lock:
-        if active_conn:
-            yield active_conn
-        else:
-            with duckdb.connect(DB_FILE, False) as conn:
-                active_conn = conn
-                yield conn
-            active_conn = None
+        with duckdb.connect(DB_FILE, True) as conn:
+            yield conn
 
 @contextmanager
-def conn_w() -> Generator[duckdb.DuckDBPyConnection, None, None]:
-    global active_conn
+def connect_w() -> Generator[duckdb.DuckDBPyConnection, None, None]:
     with lock:
-        if active_conn:
-            yield active_conn
-        else:
-            with duckdb.connect(DB_FILE, False) as conn:
-                active_conn = conn
-                yield conn
-            active_conn = None
+        with duckdb.connect(DB_FILE, False) as conn:
+            yield conn
 
 
 def create_tables() -> None:
-    with conn_w() as conn:
+    with connect_w() as conn:
         conn.execute("CREATE SEQUENCE IF NOT EXISTS seq_people_id START 1")
         conn.execute("CREATE SEQUENCE IF NOT EXISTS seq_chores_id START 1")
         conn.execute("CREATE SEQUENCE IF NOT EXISTS seq_assignments_id START 1")
@@ -94,7 +81,7 @@ def fill_data() -> None:
         print("PEOPLE ADDED")
     except (ModuleNotFoundError, ImportError) as e:
         print(f"NAME FALLBACK due to {e}")
-        with conn_w() as conn:
+        with connect_w() as conn:
             conn.execute("""INSERT INTO people VALUES
                             (0, 'ICE27182', false, ?, NULL, 
                             false, false, false, 
@@ -127,7 +114,7 @@ def add_chore(json_path: str) -> None:
                        "Bathroom & Toilet - Upstairs": "Here's the description"}
     with open(json_path, 'r') as json_file:
         chores = load(json_file)
-    with conn_w() as conn:
+    with connect_w() as conn:
         for chore in chores:
             name = chore["name"]
             if name.endswith("North"):
