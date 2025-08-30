@@ -225,7 +225,6 @@ def get_schedule(
 def mark_done(
     conn_w: DuckDBPyConnection,
     assignment_id: int,
-    assignee: str,
 ) -> bool:
     """
     Returns:
@@ -233,36 +232,32 @@ def mark_done(
     """
     conn_w.execute(
         """UPDATE assignments 
-           SET status = true 
-           WHERE id = ? 
-            AND assignee = ?""",
-        (assignment_id, assignee),
+           SET status = TRUE 
+           WHERE id = ?""",
+        (assignment_id, ),
     )
     row = conn_w.execute(
         """SELECT 1 FROM assignments 
-           WHERE id = ? AND assignee = ? AND status = true""",
-        (assignment_id, assignee),
+           WHERE id = ? AND status = TRUE""",
+        (assignment_id, ),
     ).fetchone()
     return row is not None
 
 def mark_not_done(
     conn_w: DuckDBPyConnection, 
-    assignment_id: int, 
-    assignee: str,
+    assignment_id: int,
 ) -> bool:
     """
     Returns:
         bool: True if successful; False if nothing has changed.
     """
     conn_w.execute("""UPDATE assignments 
-                    SET status = false 
-                    WHERE id = ? 
-                        AND assignee = ?""", (assignment_id, assignee))
+                    SET status = FALSE 
+                    WHERE id = ? """, (assignment_id, ))
     row = conn_w.execute("""SELECT 1 
                             FROM assignments 
-                            WHERE id = ? 
-                                AND assignee = ? 
-                                AND status = false""", (assignment_id, assignee)).fetchone()
+                            WHERE id = ?
+                                AND status = FALSE""", (assignment_id, )).fetchone()
     return row is not None
 
 def remove_schedules_from_now(conn_w: DuckDBPyConnection) -> None:

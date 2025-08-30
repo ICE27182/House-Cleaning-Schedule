@@ -77,21 +77,21 @@ def last_week():
 @bp.route("/mark-done", methods=["POST"])
 def mark_done():
     """
-    POST JSON { "assignment_id": int, "assignee": "name" }
+    POST /mark-done?assignment_id=<int>
+    Marks the assignment as done. `assignment_id` is provided as a URL query.
     Returns { ok: True } on success, { ok: False, error: ... } on failure.
     """
-    data = request.get_json(silent=True) or {}
-    assignment_id = data.get("assignment_id")
-    assignee = data.get("assignee")
+    assignment_id = request.args.get("assignment_id", type=int)
+    if assignment_id is None:
+        return jsonify({"ok": False, "error": "assignment_id (int) required as query parameter"}), 400
 
-    if not isinstance(assignment_id, int) or not isinstance(assignee, str) or not assignee:
-        return jsonify({"ok": False, "error": "assignment_id (int) and assignee (str) required"}), 400
-
-    try:
-        with connect_w() as conn_w:
-            changed = schedules.mark_done(conn_w, assignment_id, assignee)
-    except Exception:
-        return jsonify({"ok": False, "error": "internal error"}), 500
+    with connect_w() as conn_w:
+            changed = schedules.mark_done(conn_w, assignment_id)
+    # try:
+    #     with connect_w() as conn_w:
+    #         changed = schedules.mark_done(conn_w, assignment_id)
+    # except Exception:
+    #     return jsonify({"ok": False, "error": "internal error"}), 500
 
     if not changed:
         return jsonify({"ok": False, "error": "no change (assignment not found or already done)"}), 404
@@ -102,18 +102,16 @@ def mark_done():
 @bp.route("/mark-not-done", methods=["POST"])
 def mark_not_done():
     """
-    POST JSON { "assignment_id": int, "assignee": "name" }
+    POST /mark-not-done?assignment_id=<int>
+    Marks the assignment as not done. `assignment_id` is provided as a URL query.
     """
-    data = request.get_json(silent=True) or {}
-    assignment_id = data.get("assignment_id")
-    assignee = data.get("assignee")
-
-    if not isinstance(assignment_id, int) or not isinstance(assignee, str) or not assignee:
-        return jsonify({"ok": False, "error": "assignment_id (int) and assignee (str) required"}), 400
+    assignment_id = request.args.get("assignment_id", type=int)
+    if assignment_id is None:
+        return jsonify({"ok": False, "error": "assignment_id (int) required as query parameter"}), 400
 
     try:
         with connect_w() as conn_w:
-            changed = schedules.mark_not_done(conn_w, assignment_id, assignee)
+            changed = schedules.mark_not_done(conn_w, assignment_id)
     except Exception:
         return jsonify({"ok": False, "error": "internal error"}), 500
 

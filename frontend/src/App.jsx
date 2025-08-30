@@ -76,6 +76,7 @@ export default function App() {
   
   //
   const [assignments, setAssignments] = useState(null);
+  const [updateTrigger, setUpdateTrigger] = useState(0)
   useEffect(() => {
     if (mode === "dashboard") {
       const url = `/api/schedules?year=${week.year}&week=${week.week}`;
@@ -85,12 +86,6 @@ export default function App() {
         .catch(() => setAssignments(null));
     }
   }, [mode, week])
-  useEffect(() => console.log(assignments), [assignments])
-  // useEffect(() => {
-  //   if (assignments) 
-  //     Object.entries(assignments.schedule).map(([a, b]) => console.log(a, b))
-  // })
-
 
   const openDetails = (a, toMode = "details") => {
     setActive(a);
@@ -158,8 +153,9 @@ export default function App() {
                 info={info} 
                 dayBadge={assignments["due_days"][choreName]}
                 onOpen={(info, m)=>openPanel(info, m)} 
-                onToggle={onToggle} 
                 canEdit={canEdit} 
+                updateTrigger={updateTrigger} 
+                setUpdateTrigger={setUpdateTrigger}
               />
             ))}
           </div>

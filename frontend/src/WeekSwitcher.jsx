@@ -17,9 +17,6 @@ const WeekSwitcher = ({ cur, set }) => {
         .then(data => setNext(data))
       )
   }, [cur])
-  useEffect(() => {
-    console.log(prev, next)
-  }, [prev, next])
   return (
     <div className="flex items-center gap-2">
       {prev && <button 
