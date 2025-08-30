@@ -137,3 +137,4 @@ def add_chore(json_path: str) -> None:
             conn.execute("""INSERT INTO chores(name, description, image_path, frequency, people_group, assignee_count) VALUES (?, ?, ?, ?, ?, ?)""",
                          (name, DESCRIPTION[name], f"{name}.png", chore["how_often"], group, chore["num_of_people"]))
     
+

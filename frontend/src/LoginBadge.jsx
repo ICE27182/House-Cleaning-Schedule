@@ -20,7 +20,7 @@ const LoginBadge = ({ user, setUser }) => {
   const handleLogin = async () => {
     const name = prompt("Enter nickname (for logging changes)");
     if (!name) return;
-    const password = prompt("Password (for login) — leave blank to cancel");
+    const password = prompt("Password (Default to qwerty123)");
     if (password === null) return;
 
     try {

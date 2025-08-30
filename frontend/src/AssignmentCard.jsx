@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Users, Calendar, History, Shuffle, Pencil, ListChecks, Info, X, Plus, UserRound } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const AssigneeChip = ({ 
   name, 
@@ -41,6 +41,24 @@ const AssignmentCard = ({
   updateTrigger,
   setUpdateTrigger,
 }) => {
+  const [assignment, setAssignments] = useState(null)
+  // useEffect(()=>console.log(info))
+  useEffect(() => {
+    fetch("/api/chores", { method: "GET" })
+      .then(res => res.json()
+        .then(data => {
+          data = Object.fromEntries(
+            data.map(asgmt => [asgmt.name, asgmt])
+          )
+          setAssignments({
+            group: data[choreName]["people_group"],
+            name: choreName,
+            info: info,
+            dayBadge: dayBadge,
+          });
+        })
+      );
+  }, [])
   return (
     <motion.div layout className={`rounded-2xl border p-4 shadow-sm bg-white`}>
       <div className="flex items-start justify-between gap-2">
@@ -66,9 +84,9 @@ const AssignmentCard = ({
       </div>
 
       <div className="mt-4 flex items-center gap-2">
-        <button onClick={() => onOpen(info)} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200"><Info className="w-4 h-4"/> Details</button>
+        <button onClick={() => onOpen(assignment)} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200"><Info className="w-4 h-4"/> Details</button>
         {canEdit && (
-          <button onClick={() => onOpen(info, "edit")} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><Shuffle className="w-4 h-4"/> Edit</button>
+          <button onClick={() => onOpen(assignment, "edit")} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><Shuffle className="w-4 h-4"/> Edit</button>
         )}
       </div>
     </motion.div>

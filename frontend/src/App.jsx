@@ -92,16 +92,6 @@ export default function App() {
     setMode(toMode === "edit" ? "edit" : "details");
   };
 
-  const onToggle = async (assignmentId) => {
-    window.alert("Toggled")
-    return
-    setDoneMap(prev => {
-      const s = new Set(prev[assignmentId] || []);
-      if (s.has(person)) s.delete(person); else s.add(person);
-      return { ...prev, [assignmentId]: s };
-    });
-  };
-
   const [panel, setPanel] = useState({ open: false, mode: "details" });
   const openPanel = (a, m = "details") => { setActive(a); setPanel({ open: true, mode: m }); };
 
@@ -141,7 +131,7 @@ export default function App() {
           <button onClick={()=>setMode("dashboard")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='dashboard'? 'bg-gray-900 text-white' : 'bg-white'} `}>Dashboard</button>
           <button onClick={()=>setMode("people")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='people'? 'bg-gray-900 text-white' : 'bg-white'} `}>People</button>
           <button onClick={()=>setMode("chores")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='chores'? 'bg-gray-900 text-white' : 'bg-white'} `}>Chores</button>
-          <button onClick={()=>setMode("details")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='details'? 'bg-gray-900 text-white' : 'bg-white'} `}>More Info</button>
+          <button onClick={()=>setMode("misc")} className={`px-3 py-1.5 rounded-xl text-sm border ${mode==='misc'? 'bg-gray-900 text-white' : 'bg-white'} `}>Misc</button>
         </div>
 
         {mode === "dashboard" && (
@@ -181,7 +171,7 @@ export default function App() {
           </div>
         )}
 
-        {mode === "details" && (
+        {mode === "misc" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <section className="md:col-span-2">
               <div className="rounded-2xl border bg-white p-4">
@@ -211,11 +201,10 @@ export default function App() {
       <DetailsPanel
         open={panel.open}
         mode={panel.mode === "edit" ? "reassign" : panel.mode}
-        a={active}
+        assignment={active}
         onClose={()=>setPanel({ open: false, mode: "details" })}
         onSwap={(payload)=>handleSwap(payload)}
         onReassign={(payload)=>handleReassign(payload)}
-        pools={POOLS}
         canEdit={canEdit}
       />
 

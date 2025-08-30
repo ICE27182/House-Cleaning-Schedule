@@ -53,3 +53,4 @@ dist-ssr
 *.db
 from_namelists.py
 chore_descriptions.json
+convert_old_records.py
