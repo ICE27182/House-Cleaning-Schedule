@@ -26,7 +26,7 @@ def get_all_people(conn: DuckDBPyConnection) -> dict[str, dict[str, bool]]:
             
 def get_people(
     conn: DuckDBPyConnection,
-    group: Literal["everyone", "main_gate", "stairs", "upstairs"]
+    group: Literal["everyone", "main_gate", "stairs", "upstairs"],
 ) -> dict[str, bool]:
     if group == "everyone":
         rows = conn.execute("SELECT name, is_available, FROM people").fetchall()

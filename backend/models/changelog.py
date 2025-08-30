@@ -13,7 +13,7 @@ def _to_iso(ts: TimeLike) -> str:
 def get_changelog(
     conn: DuckDBPyConnection,
     from_time: TimeLike, 
-    to_time: TimeLike | None = None
+    to_time: TimeLike | None = None,
 ) -> list[tuple[datetime, str]]:
     """
     Return list of (created_at: datetime, description: str) between from_time and to_time (inclusive).
@@ -31,7 +31,7 @@ def get_changelog(
         WHERE created_at BETWEEN ? AND ?
         ORDER BY created_at DESC
         """,
-        (from_iso, to_iso)
+        (from_iso, to_iso),
     ).fetchall()
 
     # Ensure created_at is a datetime object

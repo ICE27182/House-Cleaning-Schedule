@@ -62,74 +62,6 @@ const isoWeek = (d = new Date()) => {
   };
 }
 
-const rng = (seed) => {
-  // quick LCG for deterministic shuffles in the preview
-  let s = seed % 2147483647; if (s <= 0) s += 2147483646;
-  return () => (s = (s * 16807) % 2147483647) / 2147483647;
-};
-
-const rotateAssignments = ({ week, year, chores, pools, ring = {} }) => {
-  const out = [];
-  const rand = rng(year * 100 + week);
-  const sunday = (/* sunday of ISO week */) => {
-    // find Monday
-    const simple = (y,w) => {
-      const jan4 = new Date(Date.UTC(y,0,4));
-      const day = jan4.getUTCDay() || 7; // 1..7
-      const monday = new Date(jan4);
-      monday.setUTCDate(jan4.getUTCDate() - day + 1 + (w-1)*7);
-      return monday;
-    };
-    const mon = simple(year, week);
-    const sun = new Date(mon); sun.setUTCDate(mon.getUTCDate()+6);
-    return sun.toISOString().slice(0,10);
-  };
-
-  chores.forEach((c) => {
-    // frequency check for this week
-    const show = (() => {
-      if (c.freq === "weekly") return true;
-      if (c.freq?.type === "biweekly") {
-        return (week % 2) === (c.freq.offset || 0);
-      }
-      if (c.freq?.type === "weeks_list") {
-        return c.freq.year === year && c.freq.weeks.includes(week);
-      }
-      return true;
-    })();
-
-    if (!show) return;
-
-    const pool = pools[c.pool] || [];
-    const pointer = ring[c.name] ?? 0;
-    const assignees = Array.from({ length: c.num }, (_, i) => pool[(pointer + i) % pool.length]).filter(Boolean);
-
-    out.push({
-      id: `${year}-${week}-${c.name}`,
-      name: c.name,
-      poolKey: c.pool,
-      frequency: c.freq,
-      num: c.num,
-      assignees,
-      done: [],
-      execDate: c.freq?.day === "Sunday" ? sunday() : null, // only for day-specific chores
-      lastChange: null,
-      notes: "",
-      history: [],
-    });
-  });
-
-  return out;
-}
-
-// -------------- API (stubs) --------------
-const api = {
-  mark: async (assignmentId, person) => ({ ok: true }),
-  unmark: async (assignmentId, person) => ({ ok: true }),
-  swap: async (assignmentId, from, to, reason) => ({ ok: true }),
-  reassign: async (assignmentId, people, reason) => ({ ok: true }),
-};
-
 
 // -------------- Main App --------------
 export default function App() {
@@ -158,11 +90,14 @@ export default function App() {
   //
   const [assignments, setAssignments] = useState(null);
   useEffect(() => {
-    if (mode === "dashboard")
-      fetch("/api/schedules/", { method: "GET" })
+    if (mode === "dashboard") {
+      const url = `/api/schedules?year=${week.year}&week=${week.week}`;
+      fetch(url, { method: "GET", credentials: "include" })
         .then(response => response.json()
           .then(data => setAssignments(data)))
-  }, [mode])
+        .catch(() => setAssignments(null));
+    }
+  }, [mode, week])
   useEffect(() => console.log(assignments), [assignments])
   // useEffect(() => {
   //   if (assignments) 

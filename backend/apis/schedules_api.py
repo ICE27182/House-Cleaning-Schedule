@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from datetime import date
 
-from ..models import schedules as schedules_model
-from ..models import auth as auth_model
+from backend.models import schedules, auth
+from backend.db import connect_r, connect_w
 
 bp = Blueprint("schedules_api", __name__, url_prefix="/schedules")
 
@@ -24,13 +24,16 @@ def query_schedule():
             week = w
 
     try:
-        schedule = schedules_model.get_schedule(year, week)
-        due_days = schedules_model.get_due_str_for_chores(schedule.keys(), year, week)
+        with connect_w() as conn_w:
+            schedule = schedules.get_schedule(conn_w, year, week)
+            due_days = schedules.get_due_str_for_chores(
+                conn_w, schedule.keys(), year, week,
+            )
     except ValueError as e:
         return jsonify({"ok": False, "error": str(e)}), 400
-    # except Exception as e:
-    #     print(str(e))
-    #     return jsonify({"ok": False, "error": "internal error"}), 500
+    except Exception as e:
+        print(str(e))
+        return jsonify({"ok": False, "error": "internal error"}), 500
 
     return jsonify({"ok": True, "year": year, "week": week, 
                     "schedule": schedule, "due_days": due_days})
@@ -50,7 +53,8 @@ def mark_done():
         return jsonify({"ok": False, "error": "assignment_id (int) and assignee (str) required"}), 400
 
     try:
-        changed = schedules_model.mark_done(assignment_id, assignee)
+        with connect_w() as conn_w:
+            changed = schedules.mark_done(conn_w, assignment_id, assignee)
     except Exception:
         return jsonify({"ok": False, "error": "internal error"}), 500
 
@@ -73,7 +77,8 @@ def mark_not_done():
         return jsonify({"ok": False, "error": "assignment_id (int) and assignee (str) required"}), 400
 
     try:
-        changed = schedules_model.mark_not_done(assignment_id, assignee)
+        with connect_w() as conn_w:
+            changed = schedules.mark_not_done(conn_w, assignment_id, assignee)
     except Exception:
         return jsonify({"ok": False, "error": "internal error"}), 500
 
@@ -92,14 +97,14 @@ def reset_schedules_from_now():
     token = request.cookies.get("session_token")
     if not token:
         return jsonify({"ok": False, "error": "unauthenticated"}), 401
+    with connect_w() as conn_w:
+        person = auth.get_person(conn_w, token)
+        if not person:
+            return jsonify({"ok": False, "error": "unauthenticated"}), 401
 
-    person = auth_model.get_person(token)
-    if not person:
-        return jsonify({"ok": False, "error": "unauthenticated"}), 401
-
-    try:
-        schedules_model.remove_schedules_from_now()
-    except Exception:
-        return jsonify({"ok": False, "error": "internal error"}), 500
+        try:
+            schedules.remove_schedules_from_now(conn_w)
+        except Exception:
+            return jsonify({"ok": False, "error": "internal error"}), 500
 
     return jsonify({"ok": True})
