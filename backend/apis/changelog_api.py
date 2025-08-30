@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timezone, timedelta
 
-from ..models import changelog as changelog_model
+from backend.models import changelog
+from backend.db import connect_r
 
 bp = Blueprint("changelog", __name__, url_prefix="/changelog")
 
@@ -46,7 +47,8 @@ def list_changelog():
     except Exception:
         return jsonify({"ok": False, "error": "invalid ISO datetime in query parameters"}), 400
 
-    entries = changelog_model.get_changelog(q_from_iso, q_to_iso)
+    with connect_r() as conn_r:
+        entries = changelog.get_changelog(conn_r, q_from_iso, q_to_iso)
 
     # apply optional limit (entries are already ordered newest-first in model)
     if isinstance(limit, int) and limit > 0:
