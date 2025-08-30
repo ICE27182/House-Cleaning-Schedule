@@ -26,19 +26,6 @@ import Chores from "./Chores";
  */
 
 // -------------- Mock Data (from your JSON) --------------
-const CHORE_DEFS = [
-  { name: "Kitchen Cleaning", pool: "namelist.json", num: 2, freq: "weekly" },
-  { name: "House Vacuuming", pool: "namelist.json", num: 2, freq: "weekly" },
-  { name: "Basement Cleaning", pool: "namelist.json", num: 1, freq: "weekly" },
-  { name: "Glass Garbage", pool: "namelist.json", num: 1, freq: { type: "biweekly", offset: 1, day: "any" } },
-  { name: "Cardboard Garbage", pool: "namelist.json", num: 1, freq: { type: "weeks_list", year: 2025, weeks: [2,6,10,14,19,24,28,32,36,41,45,49], day: "Sunday" } },
-  { name: "Organic Garbage", pool: "namelist.json", num: 1, freq: { type: "biweekly", offset: 0, day: "Sunday" } },
-  { name: "Plastic Garbage", pool: "namelist.json", num: 1, freq: { type: "biweekly", offset: 1, day: "Sunday" } },
-  { name: "Toilet & Bathroom Cleaning North", pool: "namelist_north.json", num: 1, freq: "weekly" },
-  { name: "Toilet & Bathroom Cleaning South", pool: "namelist_south.json", num: 1, freq: "weekly" },
-  { name: "Toilet & Bathroom Cleaning Second Floor", pool: "namelist_second_floor.json", num: 1, freq: "weekly" },
-];
-
 // Pools in random order; new names inserted randomly; old names removed
 const POOLS = {
   "namelist.json": ["Nil","Isabelle","Pati","Sam","Costas","Hannah","Amina","Ismail","Minh","Justin","Korina","Waqar"],

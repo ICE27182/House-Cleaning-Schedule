@@ -8,14 +8,14 @@ from typing import Literal, override, ClassVar
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from datetime import date
+from datetime import date, timedelta
 from random import seed, shuffle
 from bisect import bisect_left
 from operator import itemgetter
 
 PERIODICALLY = compile(r"^Once per (?:(\d+) )?weeks?\s*(?:on ([a-zA-Z]+day) )?(?:with offset (\d+))?$")
 SPECIFICALLY = compile(r"^Weeks (?:on ([A-Z][a-zA-Z]+day) )?in (\d{4}):((?: \d+)+)$")
-MAX_WEEKS_FROM_NOW: int = 30
+MAX_WEEKS_FROM_NOW: int = 30 # Must be positive
 
 class ChoreNoFoundError(Exception): pass
 
@@ -136,7 +136,7 @@ class FreqSpecific(Frequency):
     def nth_turn(self, year, week):
         week_no = sorted(self.week_no)
         n = bisect_left(week_no, week)
-        if n != week_no[n]:
+        if n >= len(week_no) or n != week_no[n]:
             raise ValueError("Invalid year week combination."
                              f"Got {year=} and {week=}.")
         return n    
@@ -275,6 +275,115 @@ def remove_schedules_from_now(conn_w: DuckDBPyConnection) -> None:
         "DELETE FROM assignments WHERE (year > ?) OR (year = ? AND week >= ?)",
         (year, year, week),
     )
+
+def next_week(conn: DuckDBPyConnection, year: int, week: int) -> tuple[int, int] | None:
+    """
+    Find the next relevant week given a year/week.
+
+    Behavior:
+    - If the provided year/week is before the current ISO week:
+        Search forward from the provided week up to the current week (inclusive)
+        and return the first week that has at least one assignment in the DB.
+        If none found, return the current week.
+    - If the provided year/week is the current week or a future week:
+        Search forward from the next week and return the first week that has at
+        least one assignment, up to MAX_WEEKS_FROM_NOW ahead. If no such week
+        exists within the allowed window, return None.
+
+    Returns (year, week) or None when beyond MAX_WEEKS_FROM_NOW for future searches.
+    """
+    def next_yw(y: int, w: int) -> tuple[int, int]:
+        d = date.fromisocalendar(y, w, 1) + timedelta(days=7)
+        ny, nw, _ = d.isocalendar()
+        return ny, nw
+
+    today = date.today()
+    cur_y, cur_w, _ = today.isocalendar()
+
+    # helper to check DB for any assignment in the week
+    def has_assignment(y: int, w: int) -> bool:
+        row = conn.execute(
+            "SELECT 1 FROM assignments WHERE year = ? AND week = ? LIMIT 1",
+            (y, w),
+        ).fetchone()
+        return row is not None
+
+    # If the requested week is in the past (strictly before current)
+    if (year, week) < (cur_y, cur_w):
+        y, w = year, week
+        # search forward up to current week inclusive
+        while (y, w) <= (cur_y, cur_w):
+            if has_assignment(y, w):
+                return (y, w)
+            if (y, w) == (cur_y, cur_w):
+                break
+            y, w = next_yw(y, w)
+        # none found — return current week
+        return (cur_y, cur_w)
+
+    # current or future: search forward starting from next week up to MAX_WEEKS_FROM_NOW
+    y, w = next_yw(year, week)
+    while True:
+        # compute weeks ahead relative to today
+        weeks_ahead = (date.fromisocalendar(y, w, 1) - today).days // 7
+        if weeks_ahead > MAX_WEEKS_FROM_NOW:
+            return None
+        return (y, w)
+
+
+def last_week(conn: DuckDBPyConnection, year: int, week: int) -> tuple[int, int] | None:
+    """
+    Find the last relevant week given a year/week.
+
+    Behavior:
+    - If the provided year/week is after the current ISO week:
+        Search backward from the provided week down to the current week (inclusive)
+        and return the first week (closest to the provided week going backwards)
+        that has at least one assignment in the DB. If none found, return the current week.
+    - If the provided year/week is the current week or a past week:
+        Search backward from the previous week and return the first week that has at
+        least one assignment, up to MAX_WEEKS_FROM_NOW weeks in the past. If no such
+        week exists within the allowed window, return None.
+
+    Returns (year, week) or None when beyond MAX_WEEKS_FROM_NOW for past searches.
+    """
+    def earliest_yw(conn: DuckDBPyConnection) -> tuple[int, int]:
+        row = conn.execute(
+            """SELECT year, week
+                FROM assignments
+                ORDER BY year ASC, week ASC
+                LIMIT 1""").fetchone()
+        if row is None: # No assignment at all
+            return tuple(date.today().isocalendar()[:2])
+        else:
+            return (row[0], row[1])
+    def prev_yw(y: int, w: int) -> tuple[int, int]:
+        d = date.fromisocalendar(y, w, 1) - timedelta(days=7)
+        py, pw, _ = d.isocalendar()
+        return py, pw
+
+    today = date.today()
+    cur_y, cur_w, _ = today.isocalendar()
+
+    def has_assignment(y: int, w: int) -> bool:
+        row = conn.execute(
+            "SELECT 1 FROM assignments WHERE year = ? AND week = ? LIMIT 1",
+            (y, w),
+        ).fetchone()
+        return row is not None
+
+    # If the requested week is in the future (strictly after current)
+    if (year, week) > (cur_y, cur_w):
+        return prev_yw(year, week)
+
+    # current or past: search backward starting from previous week up to MAX_WEEKS_FROM_NOW weeks ago
+    y, w = prev_yw(year, week)
+    earliest = earliest_yw(conn)
+    while (y, w) >= earliest:
+        if has_assignment(y, w):
+            return (y, w)
+        y, w = prev_yw(y, w)
+    return None
     
 def _test():
     raise NotImplementedError

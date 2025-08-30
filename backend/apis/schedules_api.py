@@ -15,7 +15,6 @@ def query_schedule():
     """
     year = request.args.get("year", type=int)
     week = request.args.get("week", type=int)
-
     if year is None or week is None:
         y, w, _ = date.today().isocalendar()
         if year is None:
@@ -31,13 +30,49 @@ def query_schedule():
             )
     except ValueError as e:
         return jsonify({"ok": False, "error": str(e)}), 400
-    except Exception as e:
-        print(str(e))
-        return jsonify({"ok": False, "error": "internal error"}), 500
+    # except Exception as e:
+    #     print(str(e))
+    #     return jsonify({"ok": False, "error": "internal error"}), 500
 
     return jsonify({"ok": True, "year": year, "week": week, 
                     "schedule": schedule, "due_days": due_days})
 
+@bp.route("/max-weeks-from-now", methods=["GET"])
+def query_max_weeks_from_now():
+    return jsonify(schedules.MAX_WEEKS_FROM_NOW)
+
+@bp.route("/next-week", methods=["GET"])
+def next_week():
+    year = request.args.get("year", type=int)
+    week = request.args.get("week", type=int)
+    if year is None or week is None:
+        y, w, _ = date.today().isocalendar()
+        if year is None:
+            year = y
+        if week is None:
+            week = w
+    with connect_r() as conn_r:
+        next_week = schedules.next_week(conn_r, year, week)
+        print(f"{week=}, {next_week=}")
+        return jsonify({"year": next_week[0], "week": next_week[1]}
+                       if next_week else None)
+
+@bp.route("/last-week", methods=["GET"])
+def last_week():
+    year = request.args.get("year", type=int)
+    week = request.args.get("week", type=int)
+    if year is None or week is None:
+        y, w, _ = date.today().isocalendar()
+        if year is None:
+            year = y
+        if week is None:
+            week = w
+    with connect_r() as conn_r:
+        last_week = schedules.last_week(conn_r, year, week)
+        print(f"{week=}, {last_week=}")
+        return jsonify({"year": last_week[0], "week": last_week[1]}
+                       if last_week else None)
+    
 
 @bp.route("/mark-done", methods=["POST"])
 def mark_done():
