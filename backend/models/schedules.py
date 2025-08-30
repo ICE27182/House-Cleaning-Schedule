@@ -12,6 +12,7 @@ from datetime import date, timedelta
 from random import seed, shuffle
 from bisect import bisect_left
 from operator import itemgetter
+from hashlib import md5
 
 PERIODICALLY = compile(r"^Once per (?:(\d+) )?weeks?\s*(?:on ([a-zA-Z]+day) )?(?:with offset (\d+))?$")
 SPECIFICALLY = compile(r"^Weeks (?:on ([A-Z][a-zA-Z]+day) )?in (\d{4}):((?: \d+)+)$")
@@ -149,7 +150,7 @@ def pick_assignees(conn: DuckDBPyConnection, year: int, week: int, chore: Chore)
              for name, is_available in get_people(conn, chore["people_group"]).items()
              if is_available]
     freq = Frequency.from_str(chore["frequency"])
-    seed(hash(chore["name"]))
+    seed(md5(chore["name"].encode()).digest())
     shuffle(group)
     try:
         n = freq.nth_turn(year, week) * chore["assignee_count"] % len(group)
