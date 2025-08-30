@@ -2,20 +2,36 @@ import duckdb
 from werkzeug.security import generate_password_hash
 import os
 from json import load
-from re import compile
 from typing import Generator
 from contextlib import contextmanager
+from threading import RLock
 
 DB_FILE = os.path.join(os.path.dirname(__file__), "chores.db")
+lock = RLock()
+active_conn = None
 @contextmanager
 def conn_r() -> Generator[duckdb.DuckDBPyConnection, None, None]:
-    with duckdb.connect(DB_FILE, True) as conn:
-        yield conn
+    global active_conn
+    with lock:
+        if active_conn:
+            yield active_conn
+        else:
+            with duckdb.connect(DB_FILE, False) as conn:
+                active_conn = conn
+                yield conn
+            active_conn = None
 
 @contextmanager
 def conn_w() -> Generator[duckdb.DuckDBPyConnection, None, None]:
-    with duckdb.connect(DB_FILE, False) as conn:
-        yield conn
+    global active_conn
+    with lock:
+        if active_conn:
+            yield active_conn
+        else:
+            with duckdb.connect(DB_FILE, False) as conn:
+                active_conn = conn
+                yield conn
+            active_conn = None
 
 
 def create_tables() -> None:
@@ -35,8 +51,8 @@ def create_tables() -> None:
             session_cookie_token VARCHAR DEFAULT NULL,
             -- Where
             main_gate BOOLEAN NOT NULL,
-            staris BOOLEAN NOT NULL,
-            upstaris BOOLEAN NOT NULL,
+            stairs BOOLEAN NOT NULL,
+            upstairs BOOLEAN NOT NULL,
             -- When
             joined_at_around TIMESTAMP,
             left_at_around TIMESTAMP DEFAULT NULL,
@@ -59,8 +75,8 @@ def create_tables() -> None:
             chore_id INTEGER NOT NULL REFERENCES chores(id),
             week INTEGER NOT NULL,
             year INTEGER NOT NULL,
-            assignees TEXT NOT NULL, -- Doesnt reference table people for flexibility. How much larger can this db be, right
-            UNIQUE(chore_id, week, year),
+            assignee TEXT NOT NULL, -- Doesnt reference table people for flexibility. How much larger can this db be, right
+            status BOOLEAN NOT NULL DEFAULT false,
         );
         """)
         conn.execute("""
@@ -111,8 +127,6 @@ def add_chore(json_path: str) -> None:
                        "Bathroom & Toilet - Upstairs": "Here's the description"}
     with open(json_path, 'r') as json_file:
         chores = load(json_file)
-    periodically = compile(r"^Once per (?:(\d+) )?weeks?\s*(?:on ([a-zA-Z]+day) )?(?:with offset (\d+))?$")
-    specifically = compile(r"^Weeks (?:on ([A-Z][a-zA-Z]+day) )?in (\d{4}):((?: \d+)+)$")
     with conn_w() as conn:
         for chore in chores:
             name = chore["name"]

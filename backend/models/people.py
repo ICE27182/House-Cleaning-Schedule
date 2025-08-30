@@ -1,4 +1,5 @@
 from backend.db import conn_r, conn_w
+from typing import Literal
 
 def get_all_people() -> dict[str, dict[str, bool]]:
     with conn_r() as conn:
@@ -6,24 +7,51 @@ def get_all_people() -> dict[str, dict[str, bool]]:
                                 name,
                                 is_available,
                                 main_gate,
-                                staris,
-                                upstaris 
+                                stairs,
+                                upstairs 
                                FROM people""").fetchall()
     everyone, people_mg, people_s, people_u = {}, {}, {}, {}
-    for name, is_available, main_gate, staris, upstaris in rows:
+    for name, is_available, main_gate, stairs, upstairs in rows:
         everyone[name] = is_available
         if main_gate:
             people_mg[name] = is_available
-        if staris:
+        if stairs:
             people_s[name] = is_available
-        if upstaris:
+        if upstairs:
             people_u[name] = is_available
     return {"everyone": everyone,
             "main_gate": people_mg,
             "stairs": people_s,
             "upstairs": people_u}
             
-    
+def get_people(
+    group: Literal["everyone", "main_gate", "stairs", "upstairs"]
+) -> dict[str, bool]:
+    with conn_r() as conn:
+        if group == "everyone":
+            rows = conn.execute("SELECT name, is_available, FROM people").fetchall()
+        elif group == "main_gate":
+            rows = conn.execute("""SELECT 
+                                    name,
+                                    is_available,
+                                   FROM people
+                                   WHERE main_gate = true""").fetchall()
+        elif group == "stairs":
+            rows = conn.execute("""SELECT 
+                                    name,
+                                    is_available,
+                                   FROM people
+                                   WHERE stairs = true""").fetchall()
+        elif group == "upstairs":
+            rows = conn.execute("""SELECT 
+                                    name,
+                                    is_available,
+                                   FROM people
+                                   WHERE upstairs = true""").fetchall()
+        else:
+            raise ValueError(f"Invalid group. Got {repr(group)}.")
+    return dict(rows)
+
 
 
 # def add_person(name):

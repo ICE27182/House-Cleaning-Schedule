@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Circle, Users, Calendar, History, Shuffle, Pencil, ClipboardList, Info, X, Plus, UserRound, TabletSmartphone, ShoppingBag } from "lucide-react";
+import { CheckCircle2, Circle, Users, Calendar, History, Shuffle, Pencil, ClipboardList, Info, X, Plus, UserRound, TabletSmartphone, ShoppingBag, ColumnsSettings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DetailsPanel } from "./DetailsPanel";
 import { WeekSwitcher} from "./WeekSwitcher";
@@ -139,34 +139,45 @@ export default function App() {
   const [active, setActive] = useState(null); // active assignment
   const canEdit = Boolean(user);
 
-  const assignments = useMemo(() => rotateAssignments({ week: week.week, year: week.year, chores: CHORE_DEFS, pools: POOLS }), [week]);
-  const [doneMap, setDoneMap] = useState({}); // assignmentId -> Set(names)
-
   // Automatically login with cookie
   useEffect(() => {
     let mounted = true;
     fetch("/api/auth/me", { credentials: "include" })
-      .then(async (res) => {
-        if (!mounted) return;
-        if (!res.ok) return setUser("");
-        const data = await res.json().catch(()=>({}));
-        setUser(data?.name || "");
-      })
-      .catch(()=> {
-        if (mounted) setUser("");
-      });
+    .then(async (res) => {
+      if (!mounted) return;
+      if (!res.ok) return setUser("");
+      const data = await res.json().catch(()=>({}));
+      setUser(data?.name || "");
+    })
+    .catch(()=> {
+      if (mounted) setUser("");
+    });
     return () => { mounted = false; };
   }, []);
+  
+  //
+  const [assignments, setAssignments] = useState(null);
+  useEffect(() => {
+    if (mode === "dashboard")
+      fetch("/api/schedules/", { method: "GET" })
+        .then(response => response.json()
+          .then(data => setAssignments(data)))
+  }, [mode])
+  useEffect(() => console.log(assignments), [assignments])
+  // useEffect(() => {
+  //   if (assignments) 
+  //     Object.entries(assignments.schedule).map(([a, b]) => console.log(a, b))
+  // })
 
-  // reflect done state onto assignments
-  const cards = assignments.map(a => ({ ...a, done: Array.from(doneMap[a.id] || new Set()) }));
 
   const openDetails = (a, toMode = "details") => {
     setActive(a);
     setMode(toMode === "edit" ? "edit" : "details");
   };
 
-  const onToggle = async (assignmentId, person) => {
+  const onToggle = async (assignmentId) => {
+    window.alert("Toggled")
+    return
     setDoneMap(prev => {
       const s = new Set(prev[assignmentId] || []);
       if (s.has(person)) s.delete(person); else s.add(person);
@@ -218,8 +229,16 @@ export default function App() {
 
         {mode === "dashboard" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {cards.map((a) => (
-              <AssignmentCard key={a.id} a={a} onOpen={(card, m)=>openPanel(card, m)} onToggle={onToggle} canEdit={canEdit} />
+            {assignments && Object.entries(assignments.schedule).map(([choreName, info], i) => (
+              <AssignmentCard 
+                key={i}
+                choreName={choreName}
+                info={info} 
+                dayBadge={assignments["due_days"][choreName]}
+                onOpen={(info, m)=>openPanel(info, m)} 
+                onToggle={onToggle} 
+                canEdit={canEdit} 
+              />
             ))}
           </div>
         )}

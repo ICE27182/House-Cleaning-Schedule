@@ -11,15 +11,14 @@ const AssigneeChip = ({ name, active, onToggle }) => {
   );
 }
 
-const AssignmentCard = ({ a, onOpen, onToggle, canEdit }) => {
-  const allDone = a.assignees.every(p => a.done.includes(p));
-  const dayBadge = a.execDate ? `Due Sun ${a.execDate.slice(5)}` : "Any day this week";
+const AssignmentCard = ({ choreName, info, dayBadge, onOpen, onToggle, canEdit }) => {
+  const allDone = (Object.entries(info).map(([id, nameNStatus]) => nameNStatus)).every(a => a===true)
   return (
     <motion.div layout className={`rounded-2xl border p-4 shadow-sm bg-white ${allDone ? "ring-1 ring-emerald-200" : ""}`}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="font-semibold text-gray-900 flex items-center gap-2">
-            <ListChecks className="w-4 h-4"/> {a.name}
+            <ListChecks className="w-4 h-4"/> {choreName}
           </div>
           <div className="text-xs text-gray-500 mt-1 flex items-center gap-1"><Calendar className="w-3 h-3"/> {dayBadge}</div>
         </div>
@@ -27,15 +26,15 @@ const AssignmentCard = ({ a, onOpen, onToggle, canEdit }) => {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {a.assignees.map((p) => (
-          <AssigneeChip key={p} name={p} active={a.done.includes(p)} onToggle={() => onToggle(a.id, p)} />
+        {Object.entries(info).map(([id, nameNStatus]) => (
+          <AssigneeChip key={id} name={nameNStatus[0]} active={nameNStatus[1]} onToggle={() => onToggle(id)} />
         ))}
       </div>
 
       <div className="mt-4 flex items-center gap-2">
-        <button onClick={() => onOpen(a)} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200"><Info className="w-4 h-4"/> Details</button>
+        <button onClick={() => onOpen(info)} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200"><Info className="w-4 h-4"/> Details</button>
         {canEdit && (
-          <button onClick={() => onOpen(a, "edit")} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><Shuffle className="w-4 h-4"/> Edit</button>
+          <button onClick={() => onOpen(info, "edit")} className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"><Shuffle className="w-4 h-4"/> Edit</button>
         )}
       </div>
     </motion.div>
