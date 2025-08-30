@@ -33,13 +33,13 @@
         "name": "Organic Garbage",
         "namelist": "namelist.json",
         "num_of_people": 1,
-        "how_often": "Once per 2 weeks on Sunday with offset 0"
+        "how_often": "Once per 2 weeks on Monday with offset 0"
     },
     {
         "name": "Plastic Garbage",
         "namelist": "namelist.json",
         "num_of_people": 1,
-        "how_often": "Once per 2 weeks on Sunday with offset 1"
+        "how_often": "Once per 2 weeks on Monday with offset 1"
     },
     {
         "name": "Toilet & Bathroom Cleaning North",
