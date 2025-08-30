@@ -292,9 +292,6 @@ def next_week(conn: DuckDBPyConnection, year: int, week: int) -> tuple[int, int]
         ny, nw, _ = d.isocalendar()
         return ny, nw
 
-    today = date.today()
-    cur_y, cur_w, _ = today.isocalendar()
-
     # helper to check DB for any assignment in the week
     def has_assignment(y: int, w: int) -> bool:
         row = conn.execute(
@@ -303,21 +300,17 @@ def next_week(conn: DuckDBPyConnection, year: int, week: int) -> tuple[int, int]
         ).fetchone()
         return row is not None
 
-    # If the requested week is in the past (strictly before current)
-    if (year, week) < (cur_y, cur_w):
-        y, w = year, week
-        # search forward up to current week inclusive
-        while (y, w) <= (cur_y, cur_w):
-            if has_assignment(y, w):
-                return (y, w)
-            if (y, w) == (cur_y, cur_w):
-                break
-            y, w = next_yw(y, w)
-        # none found — return current week
-        return (cur_y, cur_w)
+    today = date.today()
+    cur_y, cur_w, _ = today.isocalendar()
+
+    y, w = next_yw(year, week)
+    # search forward up to current week inclusive
+    while (y, w) <= (cur_y, cur_w):
+        if has_assignment(y, w):
+            return (y, w)
+        y, w = next_yw(y, w)
 
     # current or future: search forward starting from next week up to MAX_WEEKS_FROM_NOW
-    y, w = next_yw(year, week)
     while True:
         # compute weeks ahead relative to today
         weeks_ahead = (date.fromisocalendar(y, w, 1) - today).days // 7

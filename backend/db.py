@@ -90,6 +90,8 @@ def fill_data() -> None:
             conn.execute("""INSERT INTO changelog(description) VALUES
                         ('Initial log')""")
     add_chore("chores.json")
+    if os.path.exists("record.json"):
+        convert_old_records()
         
 def reset() -> None:
     if os.path.exists(DB_FILE):
@@ -136,5 +138,41 @@ def add_chore(json_path: str) -> None:
                 raise ValueError(f"Invalid group. Got {repr(group)}.")
             conn.execute("""INSERT INTO chores(name, description, image_path, frequency, people_group, assignee_count) VALUES (?, ?, ?, ?, ?, ?)""",
                          (name, DESCRIPTION[name], f"{name}.png", chore["how_often"], group, chore["num_of_people"]))
-    
+
+def convert_old_records(path: str = "record.json"):
+    NAME_ID_MAPPING = {
+        "Kitchen Cleaning": 1,
+        "House Vacuuming": 2,
+        "Basement Cleaning": 3,
+        "Glass Garbage": 4,
+        "Cardboard Garbage": 5,
+        "Organic Garbage": 6,
+        "Plastic Garbage": 7,
+        "Bathroom & Toilet - Stairs": 8,
+        "Bathroom & Toilet - Main Gate": 9,
+        "Bathroom & Toilet - Upstairs": 10,
+    }
+    with open(path, 'r') as record_file:
+        records = load(record_file)
+    with connect_w() as conn:
+        for weekyear, schedule in records.items():
+            week, year = map(int, weekyear.split())
+            for info in schedule.values():
+                chore_name: str = info["chore_name"]
+                if chore_name.endswith("North"):
+                    chore_name = "Bathroom & Toilet - Stairs"
+                elif chore_name.endswith("South"):
+                    chore_name = "Bathroom & Toilet - Main Gate"
+                elif chore_name.endswith("Second Floor"):
+                    chore_name = "Bathroom & Toilet - Upstairs"
+                if chore_name == "Nothing scheduled for this weeks":
+                    continue
+                chore_id = NAME_ID_MAPPING[chore_name]
+                for assignee, status in info["people"].items():
+                    conn.execute(
+                        """INSERT INTO assignments(chore_id, week, year, assignee, status)
+                        VALUES (?, ?, ?, ?, ?)
+                        """,
+                        (chore_id, week, year, assignee, status)
+                    )
 
