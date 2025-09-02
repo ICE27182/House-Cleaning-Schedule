@@ -30,9 +30,6 @@ def query_schedule():
             )
     except ValueError as e:
         return jsonify({"ok": False, "error": str(e)}), 400
-    # except Exception as e:
-    #     print(str(e))
-    #     return jsonify({"ok": False, "error": "internal error"}), 500
 
     return jsonify({"ok": True, "year": year, "week": week, 
                     "schedule": schedule, "due_days": due_days})
@@ -53,7 +50,6 @@ def next_week():
             week = w
     with connect_r() as conn_r:
         next_week = schedules.next_week(conn_r, year, week)
-        print(f"{week=}, {next_week=}")
         return jsonify({"year": next_week[0], "week": next_week[1]}
                        if next_week else None)
 
@@ -69,7 +65,6 @@ def last_week():
             week = w
     with connect_r() as conn_r:
         last_week = schedules.last_week(conn_r, year, week)
-        print(f"{week=}, {last_week=}")
         return jsonify({"year": last_week[0], "week": last_week[1]}
                        if last_week else None)
     

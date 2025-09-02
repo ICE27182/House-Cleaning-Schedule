@@ -9,7 +9,7 @@ export default defineConfig({
     // When running `npm run dev`, Vite will proxy /api/... to the Flask server
     proxy: {
       '/api': {
-        target: 'http://localhost:8088',
+        target: 'http://localhost:80',
         // changeOrigin: true,          // necessary for some hosts
         // rewrite: (path) => path,     // keep the /api prefix (or strip it if your Flask app expects it removed)
       },

@@ -2,17 +2,16 @@ from __future__ import annotations
 
 from .people import get_people
 from .chores import get_all_chores, Chore
+from backend.utils.shuffled_group import shuffled_group
 from duckdb import DuckDBPyConnection
 from re import compile
-from typing import Literal, override, ClassVar
+from typing import override, ClassVar
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from datetime import date, timedelta
-from random import seed, shuffle
 from bisect import bisect_left
 from operator import itemgetter
-from hashlib import md5
 
 PERIODICALLY = compile(r"^Once per (?:(\d+) )?weeks?\s*(?:on ([a-zA-Z]+day) )?(?:with offset (\d+))?$")
 SPECIFICALLY = compile(r"^Weeks (?:on ([A-Z][a-zA-Z]+day) )?in (\d{4}):((?: \d+)+)$")
@@ -150,8 +149,7 @@ def pick_assignees(conn: DuckDBPyConnection, year: int, week: int, chore: Chore)
              for name, is_available in get_people(conn, chore["people_group"]).items()
              if is_available]
     freq = Frequency.from_str(chore["frequency"])
-    seed(md5(chore["name"].encode()).digest())
-    shuffle(group)
+    group = shuffled_group(group, chore["name"])
     try:
         n = freq.nth_turn(year, week) * chore["assignee_count"] % len(group)
         return [group[i % len(group)] for i in range(n, n+chore["assignee_count"])]
