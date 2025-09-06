@@ -63,12 +63,12 @@ def change_password():
     """
     token = request.cookies.get("session_token")
     if not token:
-        return jsonify({"ok": False, "error": "unauthenticated"}), 401
+        return jsonify({"ok": False, "error": "Unauthenticated"}), 401
 
     data = request.get_json(silent=True) or {}
-    new_pw = data.get("new_password")
+    new_pw = data.get("newPassword")
     if not new_pw or not isinstance(new_pw, str):
-        return jsonify({"ok": False, "error": "new_password required"}), 400
+        return jsonify({"ok": False, "error": "newPassword is required"}), 400
     
     with connect_w() as conn_w:
         password_changed = auth.change_password(conn_w, token, new_pw)
@@ -76,7 +76,7 @@ def change_password():
     if password_changed:
         return jsonify({"ok": True})
     else:
-        return jsonify({"ok": False, "error": "unauthenticated"}), 401
+        return jsonify({"ok": False, "error": "Unauthenticated"}), 401
 
 
 @bp.route("/me", methods=["GET"])

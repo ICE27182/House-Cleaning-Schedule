@@ -81,13 +81,7 @@ def mark_done():
         return jsonify({"ok": False, "error": "assignment_id (int) required as query parameter"}), 400
 
     with connect_w() as conn_w:
-            changed = schedules.mark_done(conn_w, assignment_id)
-    # try:
-    #     with connect_w() as conn_w:
-    #         changed = schedules.mark_done(conn_w, assignment_id)
-    # except Exception:
-    #     return jsonify({"ok": False, "error": "internal error"}), 500
-
+        changed = schedules.mark_done(conn_w, assignment_id)
     if not changed:
         return jsonify({"ok": False, "error": "no change (assignment not found or already done)"}), 404
 
@@ -104,12 +98,8 @@ def mark_not_done():
     if assignment_id is None:
         return jsonify({"ok": False, "error": "assignment_id (int) required as query parameter"}), 400
 
-    try:
-        with connect_w() as conn_w:
-            changed = schedules.mark_not_done(conn_w, assignment_id)
-    except Exception:
-        return jsonify({"ok": False, "error": "internal error"}), 500
-
+    with connect_w() as conn_w:
+        changed = schedules.mark_not_done(conn_w, assignment_id)
     if not changed:
         return jsonify({"ok": False, "error": "no change (assignment not found or already not-done)"}), 404
 
