@@ -42,7 +42,6 @@ const AssignmentCard = ({
   setUpdateTrigger,
 }) => {
   const [assignment, setAssignments] = useState(null)
-  // useEffect(()=>console.log(info))
   useEffect(() => {
     fetch("/api/chores", { method: "GET" })
       .then(res => res.json()

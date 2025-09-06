@@ -2,7 +2,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Circle, Users, Calendar, History, Shuffle, Pencil, ListChecks, Info, X, Plus, UserRound } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const DetailsPanel = ({ open, mode = "details", assignment, onClose, onSwap, onReassign, canEdit }) => {
+const DetailsPanel = ({ open,
+  person,
+  mode = "details",
+  assignment,
+  onClose,
+  onSwap,
+  onReassign,
+  canEdit,
+  updateTrigger,
+  setUpdateTrigger
+}) => {
   const getAssignees = (assignment) => Object.entries(assignment.info).map(([id, nameNStatus]) => nameNStatus[0])
 
   const [reason, setReason] = useState("");
@@ -14,22 +24,52 @@ const DetailsPanel = ({ open, mode = "details", assignment, onClose, onSwap, onR
   }, [assignment, mode]);
 
   
-  const [pool, setPool] = useState(null)
+  const [pool, setPool] = useState(null);
+  const [personInfo, setPersonInfo] = useState(null);
   useEffect(() => {
-    fetch("/api/people", { method: "GET" })
-    .then(res => res.json()
-    .then(data => setPool(data[assignment["group"]]))
-    )
-  }, [])
+    if (person) {
+      fetch(encodeURI(`/api/people/?person=${person}`), { method: "GET" })
+        .then(res => res.json()
+          .then(data => setPersonInfo(data)))
+    } else {
+      fetch("/api/people", { method: "GET" })
+        .then(res => res.json()
+          .then(data => setPool(data[assignment?.group])))
+    }
+  }, [person, updateTrigger])
 
-  if (!open || !assignment) return null;
+  const handleToggleAvailability = (person, availability) => {
+    fetch("/api/people/set-availability", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ person, availability }),
+    })
+      .then(resp => resp.json()
+        .then(data => {
+          if (!resp.ok) {
+            alert(`Failed.\n${data?.error}`);
+          }
+          setUpdateTrigger(updateTrigger + 1);
+        }))
+  }
+
+  if (!open || !assignment && !person) return null;
 
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/30 z-40" onClick={onClose}/>
       <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 30, opacity: 0 }} className="fixed z-50 inset-x-0 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full md:w-[720px] bg-white rounded-2xl shadow-xl border">
         <div className="p-4 border-b flex items-center justify-between">
-          <div className="font-semibold flex items-center gap-2"><ListChecks className="w-4 h-4"/> {assignment.name}</div>
+          {mode == "editPerson" ? (
+            <div className="font-semibold flex items-center gap-2">
+              <UserRound className="w-4 h-4"/> {person}
+            </div>
+          ) : (
+            <div className="font-semibold flex items-center gap-2">
+              <ListChecks className="w-4 h-4"/> {assignment.name}
+            </div>
+          )}
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-4 h-4"/></button>
         </div>
 
@@ -88,6 +128,35 @@ const DetailsPanel = ({ open, mode = "details", assignment, onClose, onSwap, onR
             </div>
           </div>
         )} */}
+
+        {mode === "editPerson" && (
+          <div className="p-4 space-y-4">
+              {personInfo &&
+                personInfo["left_at_around"] === null ? (
+                  <div className="flex justify-around">
+                    <button 
+                      className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                      onClick={() => handleToggleAvailability(person, !personInfo["is_available"])}
+                    >
+                      {personInfo["is_available"] ? "Disable Temporarily" : "Enable"}
+                    </button>
+                    <button 
+                      className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                      onClick={() => {
+
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    This person has left.
+                  </div>
+                )
+              }
+          </div>
+        )}
 
         {mode === "reassign" && (
           <div className="p-4 space-y-4">

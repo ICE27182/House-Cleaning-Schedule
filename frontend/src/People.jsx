@@ -1,13 +1,19 @@
 import { ClipboardList } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
-const People = () => {
+const People = ({ 
+  user,
+  setPerson,
+  setPanel,
+  updateTrigger,
+  setUpdateTrigger,
+}) => {
   const [nameLists, setNameLists] = useState(null)
   useEffect(() => {
     fetch("/api/people", { method: "GET" })
       .then(response => response.json()
         .then(data => setNameLists(data)))
-  }, [])
+  }, [updateTrigger])
   return (
    <div className="flex flex-col flex-wrap gap-4">
     {nameLists && Object.entries(nameLists).map(([namelistName, namelist], i) => (
@@ -20,8 +26,14 @@ const People = () => {
                   ? nameA.localeCompare(nameB)
                   : avaiB - avaiA)
                 .map(([name, isAvailable], j) => (
-                <button 
+                <button
                   key={j}
+                  onClick={() => {
+                    if (user) {
+                      setPerson(name);
+                      setPanel({ open: true, mode: "editPerson" });
+                    }
+                  }}
                   className={`px-2.5 py-1.5 rounded-full ${isAvailable ? "bg-white border border-gray-300" : "text-white bg-gray-200"}`}
                 >
                   {name}

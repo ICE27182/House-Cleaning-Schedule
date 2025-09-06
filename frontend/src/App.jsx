@@ -53,8 +53,9 @@ const isoWeek = (d = new Date()) => {
 export default function App() {
   const [week, setWeek] = useState(isoWeek());
   const [user, setUser] = useState("");
-  const [mode, setMode] = useState("dashboard"); // 'dashboard' | 'details' | 'people' | 'chores' | 'items'
-  const [active, setActive] = useState(null); // active assignment
+  // 'dashboard' | 'details' | 'people' | 'chores' | 'items' | 'editPerson'
+  const [mode, setMode] = useState("dashboard");
+  const [assignment, setAssignment] = useState(null); // active assignment
   const canEdit = Boolean(user);
 
   // Automatically login with cookie
@@ -75,6 +76,7 @@ export default function App() {
   
   //
   const [assignments, setAssignments] = useState(null);
+  const [person, setPerson] = useState(null);
   const [updateTrigger, setUpdateTrigger] = useState(0)
   useEffect(() => {
     if (mode === "dashboard") {
@@ -87,28 +89,28 @@ export default function App() {
   }, [mode, week])
 
   const openDetails = (a, toMode = "details") => {
-    setActive(a);
+    setAssignment(a);
     setMode(toMode === "edit" ? "edit" : "details");
   };
 
   const [panel, setPanel] = useState({ open: false, mode: "details" });
-  const openPanel = (a, m = "details") => { setActive(a); setPanel({ open: true, mode: m }); };
+  const openPanel = (a, m = "details") => { setAssignment(a); setPanel({ open: true, mode: m }); };
 
   const handleSwap = async ({ from, to, reason }) => {
     if (!from || !to || from === to) return alert("Pick two different people.");
     // update active card locally
-    setDoneMap(prev => ({ ...prev, [active.id]: new Set([...((prev[active.id])||new Set())].filter(x => x!==from)) }));
-    active.assignees = active.assignees.map(x => x===from? to : x);
-    active.history.unshift(`${user||"Someone"} swapped ${from} → ${to}${reason?` (${reason})`:``}`);
+    setDoneMap(prev => ({ ...prev, [assignment.id]: new Set([...((prev[assignment.id])||new Set())].filter(x => x!==from)) }));
+    assignment.assignees = assignment.assignees.map(x => x===from? to : x);
+    assignment.history.unshift(`${user||"Someone"} swapped ${from} → ${to}${reason?` (${reason})`:``}`);
     setPanel({ open: false, mode: "details" });
   };
 
   const handleReassign = async ({ people, reason }) => {
-    if (!people || people.length !== active.num) return;
-    const removed = active.assignees.filter(x => !people.includes(x));
-    setDoneMap(prev => ({ ...prev, [active.id]: new Set([...((prev[active.id])||new Set())].filter(x => people.includes(x))) }));
-    active.assignees = people;
-    active.history.unshift(`${user||"Someone"} reassigned ${removed.join(", ")} → ${people.join(", ")}${reason?` (${reason})`:``}`);
+    if (!people || people.length !== assignment.num) return;
+    const removed = assignment.assignees.filter(x => !people.includes(x));
+    setDoneMap(prev => ({ ...prev, [assignment.id]: new Set([...((prev[assignment.id])||new Set())].filter(x => people.includes(x))) }));
+    assignment.assignees = people;
+    assignment.history.unshift(`${user||"Someone"} reassigned ${removed.join(", ")} → ${people.join(", ")}${reason?` (${reason})`:``}`);
     setPanel({ open: false, mode: "details" });
   };
 
@@ -156,7 +158,13 @@ export default function App() {
               <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>People (Editing support is coming)</div>
               {!canEdit && <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">Login to make changes</div>}
             </div>
-            <People/>
+            <People
+              user={user}
+              setPerson={setPerson}
+              setPanel={setPanel}
+              updateTrigger={updateTrigger}
+              setUpdateTrigger={setUpdateTrigger}
+            />
           </div>
         )}
 
@@ -200,11 +208,14 @@ export default function App() {
       <DetailsPanel
         open={panel.open}
         mode={panel.mode === "edit" ? "reassign" : panel.mode}
-        assignment={active}
+        assignment={assignment}
+        person={person}
         onClose={()=>setPanel({ open: false, mode: "details" })}
         onSwap={(payload)=>handleSwap(payload)}
         onReassign={(payload)=>handleReassign(payload)}
         canEdit={canEdit}
+        updateTrigger={updateTrigger}
+        setUpdateTrigger={setUpdateTrigger}
       />
 
       <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-white">ICE27182</footer>
