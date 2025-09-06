@@ -41,7 +41,7 @@ def create_tables() -> None:
             stairs BOOLEAN NOT NULL,
             upstairs BOOLEAN NOT NULL,
             -- When
-            joined_at_around TIMESTAMP,
+            joined_at_around TIMESTAMP DEFAULT current_timestamp,
             left_at_around TIMESTAMP DEFAULT NULL,
         );
         """)

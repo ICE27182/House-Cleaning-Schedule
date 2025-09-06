@@ -54,7 +54,15 @@ def change_password(conn_w: DuckDBPyConnection, token: str, new_pw: str) -> bool
     )
     return True
 
-def get_person(conn: DuckDBPyConnection, token: str) -> None | tuple[int, str]:
+def get_person(
+    conn: DuckDBPyConnection,
+    token: str,
+) -> None | tuple[int, str]:
+    """
+    Returns:
+        None: token not found
+        tuple[int, str]: user id and username
+    """
     row = conn.execute(
         "SELECT id, name FROM people WHERE session_cookie_token = ?",
         (token,),
