@@ -45,7 +45,7 @@ def get_changelog(
 def add_changelog(
     conn_w: DuckDBPyConnection, 
     description: str, 
-    time: TimeLike | None,
+    time: TimeLike | None = None,
 ) -> None:
     """
     Insert a changelog entry.
