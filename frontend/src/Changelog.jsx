@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { History } from 'lucide-react'
 
-const Changelog = ({ weeksFromNow = 3, limit } = {}) => {
+const Changelog = ({ updateTrigger, weeksFromNow = 3, limit } = {}) => {
   const [entries, setEntries] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -29,7 +29,7 @@ const Changelog = ({ weeksFromNow = 3, limit } = {}) => {
       })
       .catch((err) => setError(err.message || 'Network error'))
       .finally(() => setLoading(false))
-  }, [weeksFromNow, limit])
+  }, [weeksFromNow, limit, updateTrigger])
 
   return (
     <div className="rounded-2xl border bg-white p-4">

@@ -1,12 +1,20 @@
 from flask import Blueprint, request, jsonify
 from backend.models import people, auth, changelog
 from backend.db import connect_r, connect_w
+from urllib.parse import unquote_plus
 
 bp = Blueprint("people_api", __name__, url_prefix="/people")
 
 @bp.route("/", methods=["GET"])
 def get_people():
+    # accept percent-encoded queries (e.g. spaces as %20 or +)
     person = request.args.get("person", None)
+    group = request.args.get("group", None)
+    if person is not None:
+        person = unquote_plus(person)
+    if group is not None:
+        group = unquote_plus(group)
+
     with connect_r() as conn_r:
         if person is None:
             return jsonify(people.get_all_people(conn_r))

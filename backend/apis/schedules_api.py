@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from datetime import date
+from datetime import date, timedelta
+from urllib.parse import unquote_plus
 
-from backend.models import schedules, auth
+from backend.models import schedules, auth, changelog
 from backend.db import connect_r, connect_w
 
 bp = Blueprint("schedules_api", __name__, url_prefix="/schedules")
@@ -106,23 +107,31 @@ def mark_not_done():
     return jsonify({"ok": True})
 
 
-@bp.route("/reset", methods=["POST"])
-def reset_schedules_from_now():
+@bp.route("/reset-future-schedules", methods=["POST"])
+def reset_future_schedules():
     """
     POST to remove schedules from the current week onward.
     Requires authentication via session_token cookie.
     """
     token = request.cookies.get("session_token")
     if not token:
-        return jsonify({"ok": False, "error": "unauthenticated"}), 401
+        return jsonify({"ok": False, "error": "Unauthenticated"}), 401
     with connect_w() as conn_w:
-        person = auth.get_person(conn_w, token)
-        if not person:
-            return jsonify({"ok": False, "error": "unauthenticated"}), 401
-
-        try:
-            schedules.remove_schedules_from_now(conn_w)
-        except Exception:
-            return jsonify({"ok": False, "error": "internal error"}), 500
-
+        user = auth.get_person(conn_w, token)
+        if user is None:
+            return jsonify({"ok": False, "error": "Unauthenticated"}), 401
+        else:
+            _, username = user
+        reason = request.args.get("reason", None)
+        if reason:
+            reason = f"because: \"{unquote_plus(reason)}\""
+        else:
+            reason = "for no reason"
+        schedules.remove_future_schedules(conn_w)
+        year, week, _ = (date.today() + timedelta(7)).isocalendar()
+        changelog.add_changelog(
+            conn_w,
+            f"{username} has reset the schedule "
+            f"from week {week}, {year} onward {reason}."
+        )
     return jsonify({"ok": True})

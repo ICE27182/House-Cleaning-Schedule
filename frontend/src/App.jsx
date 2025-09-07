@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Circle, Users, Calendar, History, Shuffle, Pencil, ClipboardList, Info, X, Plus, UserRound, TabletSmartphone, ShoppingBag, ColumnsSettings } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Pencil, Info, ListRestart, ExternalLink, Code2 } from "lucide-react";
 import { DetailsPanel } from "./DetailsPanel";
 import { WeekSwitcher} from "./WeekSwitcher";
 import { LoginBadge } from "./LoginBadge";
@@ -9,30 +8,6 @@ import Changelog from "./Changelog";
 import People from "./People";
 import Chores from "./Chores";
 
-/**
- * House Chores – React + Tailwind Prototype
- * -------------------------------------------------
- * What this demo shows
- * - Main dashboard (This Week & Next Week)
- * - More Info page (task details, checklist, rotation preview, history)
- * - Schedule changing page (Swap / Reassign with optional reason)
- * - Mark/unmark done without login
- * - Lightweight mock auth for edit actions
- * - Round-robin generator with random-ordered pools; pointer advances weekly
- *
- * Notes
- * - This is a front-end prototype; API calls are stubbed.
- * - Replace `api` functions with real Flask routes.
- */
-
-// -------------- Mock Data (from your JSON) --------------
-// Pools in random order; new names inserted randomly; old names removed
-const POOLS = {
-  "namelist.json": ["Nil","Isabelle","Pati","Sam","Costas","Hannah","Amina","Ismail","Minh","Justin","Korina","Waqar"],
-  "namelist_north.json": ["Amina","Ismail","Hannah"],
-  "namelist_south.json": ["Sam","Costas","Minh"],
-  "namelist_second_floor.json": ["Nil","Isabelle","Pati"],
-};
 
 // -------------- Utilities --------------
 const isoWeek = (d = new Date()) => {
@@ -53,10 +28,13 @@ const isoWeek = (d = new Date()) => {
 export default function App() {
   const [week, setWeek] = useState(isoWeek());
   const [user, setUser] = useState("");
-  // 'dashboard' | 'details' | 'people' | 'chores' | 'items' | 'editPerson'
+  // 'dashboard' | 'details' | 'people' | 'chores' | 'items' | 'editPerson' | 'addPerson'
   const [mode, setMode] = useState("dashboard");
   const [assignment, setAssignment] = useState(null); // active assignment
   const canEdit = Boolean(user);
+  const [assignments, setAssignments] = useState(null);
+  const [person, setPerson] = useState(null);
+  const [updateTrigger, setUpdateTrigger] = useState(0)
 
   // Automatically login with cookie
   useEffect(() => {
@@ -72,12 +50,8 @@ export default function App() {
       if (mounted) setUser("");
     });
     return () => { mounted = false; };
-  }, []);
+  }, [updateTrigger]);
   
-  //
-  const [assignments, setAssignments] = useState(null);
-  const [person, setPerson] = useState(null);
-  const [updateTrigger, setUpdateTrigger] = useState(0)
   useEffect(() => {
     if (mode === "dashboard") {
       const url = `/api/schedules?year=${week.year}&week=${week.week}`;
@@ -113,6 +87,36 @@ export default function App() {
     assignment.history.unshift(`${user||"Someone"} reassigned ${removed.join(", ")} → ${people.join(", ")}${reason?` (${reason})`:``}`);
     setPanel({ open: false, mode: "details" });
   };
+
+  const handleResetFutureSchedules = () => {
+    const reason = prompt("Are you sure you want to reset all future schedules?\n"
+                          + "Enter the reason to reset.");
+    fetch("/api/schedules/reset-future-schedules", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ reason: reason }),
+    })
+      .then((resp) =>
+        resp
+          .json()
+          .then((data) => {
+            setUpdateTrigger(updateTrigger + 1);
+            if (!resp.ok) {
+              alert(`Failed.\n${data?.error}`);
+            } else {
+              alert(`The schedules have been reset.`);
+            }
+          })
+          .catch(() => {
+            setUpdateTrigger(updateTrigger + 1);
+          })
+      )
+      .catch((err) => {
+        console.error("Network error:", err);
+        alert("Network error");
+      });
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-500 to-white">
@@ -207,16 +211,26 @@ export default function App() {
                     and database are excluded.
                   </li>
                 </ul>
-                <a 
-                  href="http://minecraft.fandom.com"
-                  className="inline-block border-2 rounded-2xl p-2 font-semibold my-3 items-center gap-2 hover:bg-blue-950 hover:text-white"
-                >
-                  <ShoppingBag className="inline w-4 h-4"/> Common item trackers
-                </a>
+                <div className="flex flex-col md:flex-row gap-4 text-center my-3 gpa-2">
+                  <div className="inline-block border-2 rounded-2xl p-2 font-semibold items-center gap-2 hover:bg-blue-950 hover:text-white">
+                    <a href="http://minecraft.fandom.com">
+                      <ExternalLink className="inline w-4 h-4"/> Common item trackers
+                    </a>
+
+                  </div>
+                  {user &&
+                    <button
+                      className="inline-block border-2 rounded-2xl p-2 font-semibold items-center gap-2 hover:bg-blue-950 hover:text-white"
+                      onClick={handleResetFutureSchedules}
+                    >
+                      <ListRestart className="inline w-4 h-4"/> Reset Future Schedules
+                    </button>
+                  }
+                </div>
               </div>
             </section>
             <aside>
-              <Changelog />
+              <Changelog updateTrigger={updateTrigger} />
             </aside>
           </div>
         )}
@@ -236,18 +250,18 @@ export default function App() {
         setUpdateTrigger={setUpdateTrigger}
       />
 
-      <footer className="flex flex-col gap-8 max-w-6xl mx-auto px-4 py-8 text-center text-white items-center justify-center">
-        <div className="text-[#9cdcff] p-3 font-extrabold">ICE27182</div>
+      <footer className="flex flex-col gap-4 max-w-6xl mx-auto px-4 py-8 text-center text-white items-center justify-center">
         <div className="flex flex-row justify-center items-center gap-4">
           <div className="border-0 border-black bg-[#020408] hover:border-2 rounded-2xl p-3">
-            <a href="https://github.com/ICE27182">Github</a>
+            <a href="https://github.com/ICE27182"><ExternalLink className="inline h-4 w-4 mr-2" />Github</a>
           </div>
           <div className="border-0 border-black bg-[#020408] hover:border-2 rounded-2xl p-3">
             <a href="https://github.com/ICE27182/House-Cleaning-Schedule">
-              Source Code
+              <Code2 className="inline h-4 w-4 mr-2" />Source Code
             </a>
           </div>
         </div>
+        <div className="text-[#9cdcff] font-extrabold">ICE27182</div>
       </footer>
     </div>
   );

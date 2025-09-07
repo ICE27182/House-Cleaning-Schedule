@@ -15,7 +15,7 @@ from operator import itemgetter
 
 PERIODICALLY = compile(r"^Once per (?:(\d+) )?weeks?\s*(?:on ([a-zA-Z]+day) )?(?:with offset (\d+))?$")
 SPECIFICALLY = compile(r"^Weeks (?:on ([A-Z][a-zA-Z]+day) )?in (\d{4}):((?: \d+)+)$")
-MAX_WEEKS_FROM_NOW: int = 30 # Must be positive
+MAX_WEEKS_FROM_NOW: int = 5 # Must be positive
 
 class ChoreNoFoundError(Exception): pass
 
@@ -261,14 +261,14 @@ def mark_not_done(
                                 AND status = FALSE""", (assignment_id, )).fetchone()
     return row is not None
 
-def remove_schedules_from_now(conn_w: DuckDBPyConnection) -> None:
-    """Remove all schedules in the currect and coming weeks.
+def remove_future_schedules(conn_w: DuckDBPyConnection) -> None:
+    """Remove all schedules in the coming weeks but not the current week.
     Useful when someone left while they are still assigned for chores."""
     today = date.today()
     year, week, _ = today.isocalendar()
     # Delete any assignment in a later year, or same year with week >= current week
     conn_w.execute(
-        "DELETE FROM assignments WHERE (year > ?) OR (year = ? AND week >= ?)",
+        "DELETE FROM assignments WHERE (year > ?) OR (year = ? AND week > ?)",
         (year, year, week),
     )
 
