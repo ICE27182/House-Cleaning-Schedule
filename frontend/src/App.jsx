@@ -188,6 +188,12 @@ export default function App() {
                   <li>Mark yourself done when finished. Undo if you made a mistake.</li>
                   <li>Sign in to make changes to existing schedules. All changes will be recorded and are visible to everyone</li>
                   <li>The abilities to add/remove/change persons and chores on the website are yet to be added.</li>
+                  <li>
+                    The website is open-sourced. 
+                    You can find the code via the link at the bottom of the page. 
+                    All private informations such as names, chore descriptions 
+                    and database are excluded.
+                  </li>
                 </ul>
                 <a 
                   href="http://minecraft.fandom.com"
@@ -218,7 +224,19 @@ export default function App() {
         setUpdateTrigger={setUpdateTrigger}
       />
 
-      <footer className="max-w-6xl mx-auto px-4 py-8 text-center text-sm text-white">ICE27182</footer>
+      <footer className="flex flex-col gap-8 max-w-6xl mx-auto px-4 py-8 text-center text-white items-center justify-center">
+        <div className="text-[#9cdcff] p-3 font-extrabold">ICE27182</div>
+        <div className="flex flex-row justify-center items-center gap-4">
+          <div className="border-0 border-black bg-[#020408] hover:border-2 rounded-2xl p-3">
+            <a href="https://github.com/ICE27182">Github</a>
+          </div>
+          <div className="border-0 border-black bg-[#020408] hover:border-2 rounded-2xl p-3">
+            <a href="https://github.com/ICE27182/House-Cleaning-Schedule">
+              Source Code
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 from typing import Literal, override, TypedDict
 from duckdb import DuckDBPyConnection
-from datetime import date
+from datetime import date, datetime
 class InvalidGroupError(Exception):
     @override
     def __init__(self, group: str, *args):
@@ -143,10 +143,16 @@ def add_person(
     )
 
 
-# def remove_person(
-#     conn_w: DuckDBPyConnection, 
-#     name: str, 
-#     group: Literal["everyone", "main_gate", "stairs", "upstairs"],
-# ) -> bool:
-#     conn = get_connection()
-#     conn.execute("DELETE FROM people WHERE id=?", [person_id])
+def remove_person(
+    conn_w: DuckDBPyConnection, 
+    name: str,
+) -> bool:
+    conn_w.execute(
+        """UPDATE people 
+            SET 
+                is_available=false,
+                left_at_around = ?
+            WHERE name = ?
+        """,
+        (datetime.now(), name)
+    )

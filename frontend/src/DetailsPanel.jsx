@@ -53,6 +53,33 @@ const DetailsPanel = ({ open,
           setUpdateTrigger(updateTrigger + 1);
         }))
   }
+  const handleRemovePerson = (person) => {
+    const repeatedName = prompt("You are trying to remove a person.\n"
+                                + "This CANNOT be easily undone.\n"
+                                + "Repeat the exact the name of the person "
+                                + "you are trying to remove to continue. \n"
+                                + "Once entered, you cannot undo it yourself.")
+    if (repeatedName != person) {
+      alert("The names do not match.")
+    } else {
+      fetch("/api/people/remove", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ person }),
+      })
+        .then(resp => resp.json()
+          .then(data => {
+            setUpdateTrigger(updateTrigger + 1);
+            if (!resp.ok) {
+              alert(`Failed.\n${data?.error}`);
+            } else {
+              alert(`${person} has been removed.`)
+            }
+          })
+        )
+    }
+  }
 
   if (!open || !assignment && !person) return null;
 
@@ -142,9 +169,7 @@ const DetailsPanel = ({ open,
                     </button>
                     <button 
                       className="text-sm inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
-                      onClick={() => {
-
-                      }}
+                      onClick={() => handleRemovePerson(person)}
                     >
                       Remove
                     </button>

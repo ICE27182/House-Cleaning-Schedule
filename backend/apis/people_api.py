@@ -42,6 +42,28 @@ def set_availability():
         )
     return jsonify({"ok": True})
 
+@bp.route("/remove", methods=["DELETE"])
+def remove_person():
+    token = request.cookies.get("session_token")
+    if not token:
+        return jsonify({"ok": False, "error": "Unauthenticated"}), 401
+    with connect_w() as conn_w:
+        user = auth.get_person(conn_w, token)
+        if user is None:
+            return jsonify({"ok": False, "error": "Unauthenticated"}), 401
+        else:
+            _, username = user
+        data = request.get_json(silent=True) or {}
+        person = data.get("person", None)
+        if person is None:
+            return jsonify({"ok": False, "error": "person is required."}), 401
+        people.remove_person(conn_w, person)
+        changelog.add_changelog(
+            conn_w, 
+            f"{username} removed {person}.",
+        )
+    return jsonify({"ok": True})
+
 # @bp.route("/add/", methods=["POST"])
 # def add_person():
 #     data = request.json
