@@ -155,8 +155,20 @@ export default function App() {
         {mode === "people" && (
           <div className="rounded-2xl border bg-white p-4">
             <div className="flex items-center justify-between mb-4">
-              <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>People (Editing support is coming)</div>
-              {!canEdit && <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">Login to make changes</div>}
+              <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>People</div>
+              {canEdit ? (
+                  <button
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 mr-2"
+                    onClick={() => setPanel({ open: true, mode: "addPerson"})}
+                  >
+                    Add a new housemate
+                  </button>
+                ) : (
+                  <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">
+                    Login to make changes
+                  </div>
+                )
+              }
             </div>
             <People
               user={user}

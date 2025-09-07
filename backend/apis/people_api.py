@@ -28,9 +28,9 @@ def set_availability():
         availability = data.get("availability", None)
         person = data.get("person", None)
         if availability is None:
-            return jsonify({"ok": False, "error": "availability is required."}), 401
+            return jsonify({"ok": False, "error": "availability is required."}), 400
         if person is None:
-            return jsonify({"ok": False, "error": "person is required."}), 401
+            return jsonify({"ok": False, "error": "person is required."}), 400
         if availability:
             people.enable_person(conn_w, person)
         else:
@@ -56,7 +56,7 @@ def remove_person():
         data = request.get_json(silent=True) or {}
         person = data.get("person", None)
         if person is None:
-            return jsonify({"ok": False, "error": "person is required."}), 401
+            return jsonify({"ok": False, "error": "person is required."}), 400
         people.remove_person(conn_w, person)
         changelog.add_changelog(
             conn_w, 
@@ -64,13 +64,29 @@ def remove_person():
         )
     return jsonify({"ok": True})
 
-# @bp.route("/add/", methods=["POST"])
-# def add_person():
-#     data = request.json
-#     people.add_person(data["name"])
-#     return jsonify({"status": "ok"})
-
-# @bp.route("/people/<int:person_id>", methods=["DELETE"])
-# def delete_person(person_id):
-#     people.remove_person(person_id)
-#     return jsonify({"status": "ok"})
+@bp.route("/add/", methods=["POST"])
+def add_person():
+    token = request.cookies.get("session_token")
+    if not token:
+        return jsonify({"ok": False, "error": "Unauthenticated"}), 401
+    with connect_w() as conn_w:
+        user = auth.get_person(conn_w, token)
+        if user is None:
+            return jsonify({"ok": False, "error": "Unauthenticated"}), 401
+        else:
+            _, username = user
+        data = request.get_json(silent=True) or {}
+        person = data.get("person", None)
+        group = data.get("group", None)
+        if person is None:
+            return jsonify({"ok": False, "error": "person is required."}), 400
+        if group is None:
+            return jsonify({"ok": False, "error": "group is required."}), 400
+        try:
+            people.add_person(conn_w, person, group)
+        except people.NameAlreadyExistsError as e:
+            return jsonify({"ok": False, "error": str(e)}), 409
+        except people.InvalidGroupError as e:
+            return jsonify({"ok": False, "error": str(e)}), 400
+        changelog.add_changelog(conn_w, f"{username} has added {person}.")
+    return jsonify({"ok": True})
