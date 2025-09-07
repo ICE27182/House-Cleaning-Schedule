@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pencil, Info, ListRestart, ExternalLink, Code2 } from "lucide-react";
+import { Pencil, Info, ListRestart, ExternalLink, Code2, Users, Home } from "lucide-react";
 import { DetailsPanel } from "./DetailsPanel";
 import { WeekSwitcher} from "./WeekSwitcher";
 import { LoginBadge } from "./LoginBadge";
@@ -60,7 +60,7 @@ export default function App() {
           .then(data => setAssignments(data)))
         .catch(() => setAssignments(null));
     }
-  }, [mode, week])
+  }, [mode, week, updateTrigger])
 
   const openDetails = (a, toMode = "details") => {
     setAssignment(a);
@@ -71,6 +71,8 @@ export default function App() {
   const openPanel = (a, m = "details") => { setAssignment(a); setPanel({ open: true, mode: m }); };
 
   const handleSwap = async ({ from, to, reason }) => {
+    alert("Not implemented");
+    return;
     if (!from || !to || from === to) return alert("Pick two different people.");
     // update active card locally
     setDoneMap(prev => ({ ...prev, [assignment.id]: new Set([...((prev[assignment.id])||new Set())].filter(x => x!==from)) }));
@@ -80,6 +82,8 @@ export default function App() {
   };
 
   const handleReassign = async ({ people, reason }) => {
+    alert("Not implemented");
+    return;
     if (!people || people.length !== assignment.num) return;
     const removed = assignment.assignees.filter(x => !people.includes(x));
     setDoneMap(prev => ({ ...prev, [assignment.id]: new Set([...((prev[assignment.id])||new Set())].filter(x => people.includes(x))) }));
@@ -91,6 +95,7 @@ export default function App() {
   const handleResetFutureSchedules = () => {
     const reason = prompt("Are you sure you want to reset all future schedules?\n"
                           + "Enter the reason to reset.");
+      
     fetch("/api/schedules/reset-future-schedules", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -159,7 +164,7 @@ export default function App() {
         {mode === "people" && (
           <div className="rounded-2xl border bg-white p-4">
             <div className="flex items-center justify-between mb-4">
-              <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>People</div>
+              <div className="font-semibold flex items-center gap-2"><Users className="w-4 h-4"/>People</div>
               {canEdit ? (
                   <button
                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 mr-2"
@@ -187,7 +192,7 @@ export default function App() {
         {mode === "chores" && (
           <div className="rounded-2xl border bg-white p-4">
             <div className="flex items-center justify-between mb-4">
-              <div className="font-semibold flex items-center gap-2"><Pencil className="w-4 h-4"/>Chores (Editing support is coming)</div>
+              <div className="font-semibold flex items-center gap-2"><Home className="w-4 h-4"/>Chores (Editing & Details not implemented yet)</div>
               {!canEdit && <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-lg">Login to make changes</div>}
             </div>
             <Chores />
@@ -198,12 +203,19 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <section className="md:col-span-2">
               <div className="rounded-2xl border bg-white p-4">
-                <div className="font-semibold mb-3 flex items-center gap-2"><Info className="w-4 h-4"/> What to do</div>
+                <div className="font-semibold mb-3 flex items-center gap-2"><Info className="w-4 h-4"/> Info</div>
                 <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
-                  <li>Follow the checklist on the chore card.</li>
+                  <li>
+                    You can see schedules up to a certain weeks ahead. 
+                    This is by design so we may not have to reset exsiting schedules
+                    when someone moves in or out.
+                  </li>
                   <li>Mark yourself done when finished. Undo if you made a mistake.</li>
-                  <li>Sign in to make changes to existing schedules. All changes will be recorded and are visible to everyone</li>
-                  <li>The abilities to add/remove/change persons and chores on the website are yet to be added.</li>
+                  <li>Certain chores (e.g. garbages) need to be done on the designated date</li>
+                  <li>Sign in to make changes. All changes will be recorded and are visible to everyone</li>
+                  <li>You can change your password after signing in by clicking on your name next to the Logout button</li>
+                  <li>Passwords are stored in hashes (though it's not important ig)</li>
+                  <li>Certain features have not been implemented or added at all.</li>
                   <li>
                     The website is open-sourced. 
                     You can find the code via the link at the bottom of the page. 

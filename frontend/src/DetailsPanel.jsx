@@ -216,7 +216,7 @@ const DetailsPanel = ({
       "You are trying to remove a person.\n" +
         "This CANNOT be easily undone.\n" +
         "Repeat the exact the name of the person you are trying to remove to continue. \n" +
-        "Once entered, you cannot undo it yourself."
+        "Once continued, you cannot undo it yourself."
     );
     if (repeatedName !== personName) {
       alert("The names do not match.");

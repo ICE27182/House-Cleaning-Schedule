@@ -122,7 +122,8 @@ def reset_future_schedules():
             return jsonify({"ok": False, "error": "Unauthenticated"}), 401
         else:
             _, username = user
-        reason = request.args.get("reason", None)
+        data = request.get_json() or {}
+        reason = data.get("reason", None)
         if reason:
             reason = f"because: \"{unquote_plus(reason)}\""
         else:

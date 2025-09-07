@@ -1,5 +1,4 @@
-// ...existing code...
-import {  UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 
 const LoginBadge = ({ user, setUser }) => {
   const handleLogout = async () => {
@@ -17,7 +16,7 @@ const LoginBadge = ({ user, setUser }) => {
   };
 
   const handleLogin = async () => {
-    const name = prompt("Enter nickname (for logging changes)");
+    const name = prompt("Name:");
     if (!name) return;
     const password = prompt("Password (Default to qwerty123)");
     if (password === null) return;
@@ -83,4 +82,3 @@ const LoginBadge = ({ user, setUser }) => {
   );
 }
 export {LoginBadge}
-// ...existing code...
