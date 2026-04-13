@@ -9,7 +9,7 @@ def modify_carriage(path: str):
         f.write(content)
 
 target_suffixes = ['.py', '.txt', '.md', ".jsx", ".js", ".html", ".css", ".json", ".yml", ".yaml", ".gitignore"]
-for (dirpath, dirnames, filenames) in walk('backend'):
+for (dirpath, dirnames, filenames) in walk('.'):
     for filename in filenames:
         if any(filename.endswith(suffix) for suffix in target_suffixes):
             modify_carriage(f'{dirpath}/{filename}')
