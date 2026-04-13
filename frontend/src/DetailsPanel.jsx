@@ -82,8 +82,8 @@ const AddPersonView = ({ addName, setAddName, addGroup, setAddGroup, onAdd, onCl
     <div>
       <div className="text-sm text-gray-600 mb-1">Group</div>
       <select value={addGroup} onChange={(e) => setAddGroup(e.target.value)} className="w-full border rounded-lg px-3 py-2">
-        <option value="main_gate">Uses the bathroom close the main gate</option>
-        <option value="stairs">Uses the bathroom close the stairs</option>
+        <option value="main_gate">Uses the bathroom close to the main gate</option>
+        <option value="stairs">Uses the bathroom close to the stairs</option>
         <option value="upstairs">Uses the bathroom upstairs</option>
         <option value="everyone">Uses the bathroom in their own room</option>
       </select>
